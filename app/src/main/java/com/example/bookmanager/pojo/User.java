@@ -6,6 +6,8 @@ public class User {
     String id;
     String email;
     String password;
+    String name;
+    String dob;
 
 
     public User() {
@@ -41,12 +43,31 @@ public class User {
         return password;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDob() {
+        return dob;
+    }
+
+    public void setDob(String dob) {
+        this.dob = dob;
+    }
+
     @NonNull
     @Override
     public String toString() {
         return "User{" +
                 "email='" + email + '\'' +
                 ", password='" + password + '\'' +
+                ", name='" + name + '\'' +
+                ", dob='" + dob + '\'' +
                 '}';
+
     }
 }

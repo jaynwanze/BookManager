@@ -15,13 +15,12 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.bookmanager.R;
-import com.example.bookmanager.dao.UserDAO;
+import com.example.bookmanager.db.dao.UserDAO;
+import com.example.bookmanager.db.handler.DBHandler;
 import com.example.bookmanager.textchange.TextChangeHandler;
 
-
-import java.util.List;
-
 public class SignUpActivity extends AppCompatActivity {
+    private DBHandler dbhandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,8 +32,8 @@ public class SignUpActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
-
+        dbhandler = new DBHandler(this);
+        dbhandler.getWritableDatabase();
 
         //add text change listener to password field
         TextChangeHandler tch = new TextChangeHandler(this);
@@ -47,6 +46,7 @@ public class SignUpActivity extends AppCompatActivity {
         signUpBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
+                signUp();
             }
         });
 
@@ -55,6 +55,7 @@ public class SignUpActivity extends AppCompatActivity {
         signInBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
+                signIn();
             }
         });
     }
@@ -106,9 +107,32 @@ public class SignUpActivity extends AppCompatActivity {
         EditText editEmail = findViewById(R.id.edit_email);
         String userEmail = editEmail.getText().toString();
         EditText editPassword = findViewById(R.id.password_toggle);
+        EditText editName = findViewById(R.id.name_edit);
+        EditText editDOB = findViewById(R.id.name_dob);
+        String fullName = editName.getText().toString();
+        String userDOB = editDOB.getText().toString();
         String userPassword = editPassword.getText().toString();
-        UserDAO userDAO = new UserDAO();
-        userDAO.createUserWithEmailAndPassword(userEmail, userPassword);
+        UserDAO userDAO = new UserDAO(dbhandler);
+        //check if user already exists
+        boolean userExists = userDAO.checkIfUserExists(userEmail);
+        if (userExists) {
+            Toast.makeText(SignUpActivity.this, "User already exists", Toast.LENGTH_LONG).show();
+            return;
+        }
+        //check if user was created
+        boolean userCreated = userDAO.createUser(userEmail, userPassword, fullName, userDOB);
+        if (!userCreated) {
+            Toast.makeText(SignUpActivity.this, "Failed to create user", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        //clear fields
+        editEmail.setText("");
+        editPassword.setText("");
+        editName.setText("");
+        editDOB.setText("");
+        Toast.makeText(SignUpActivity.this, "User Created", Toast.LENGTH_LONG).show();
+        //Intent intent = new Intent(SignUpActivity.this, HomepageActivity.class );
     }
 
     //sign in user
@@ -127,8 +151,24 @@ public class SignUpActivity extends AppCompatActivity {
         String userEmail = editEmail.getText().toString();
         EditText editPassword = findViewById(R.id.password_toggle);
         String userPassword = editPassword.getText().toString();
-        UserDAO userDAO = new UserDAO();
-        userDAO.signInWithEmailAndPassword(userEmail, userPassword);
+        UserDAO userDAO = new UserDAO(dbhandler);
+        //check if user exists
+        boolean userExists = userDAO.checkIfUserExists(userEmail);
+        if (!userExists) {
+            Toast.makeText(SignUpActivity.this, "User does not exist", Toast.LENGTH_LONG).show();
+            return;
+        }
+        //check if user was signed in
+        boolean userSignedIn = userDAO.signInUser(userEmail, userPassword);
+        if (!userSignedIn) {
+            Toast.makeText(SignUpActivity.this, "Password is incorrect", Toast.LENGTH_LONG).show();
+            return;
+        }
+        //clear fields
+        editEmail.setText("");
+        editPassword.setText("");
+        Toast.makeText(SignUpActivity.this, "User Signed In", Toast.LENGTH_LONG).show();
+        //Intent intent = new Intent(SignUpActivity.this, HomepageActivity.class);
     }
 
     @Override

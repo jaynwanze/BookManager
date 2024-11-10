@@ -39,25 +39,59 @@ public class SignUpActivity extends AppCompatActivity {
         TextChangeHandler tch = new TextChangeHandler(this);
         EditText editPassword = findViewById(R.id.password_toggle);
         editPassword.addTextChangedListener(tch);
+        TextView nameLabel = findViewById(R.id.name_label);
+        TextView dobLabel = findViewById(R.id.DOB_label);
+
+        EditText editName = findViewById(R.id.name_edit);
+        EditText editDOB = findViewById(R.id.name_dob);
 
 
         //add click listener to sign up button
         Button signUpBtn = findViewById(R.id.sign_up_button);
+        Button signInBtn = findViewById(R.id.sign_in_button);
+
+        //add click listener to signup button
         signUpBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-                signUp();
+                editName.setText("");
+                editDOB.setText("");
+                nameLabel.setVisibility(View.VISIBLE);
+                dobLabel.setVisibility(View.VISIBLE);
+                editName.setVisibility(View.VISIBLE);
+                editDOB.setVisibility(View.VISIBLE);
+                signInBtn.setVisibility(View.VISIBLE);
+                signUpBtn.setVisibility(View.INVISIBLE);
             }
         });
 
-        //add click listener to sign in button
-        Button signInBtn = findViewById(R.id.sign_in_button);
         signInBtn.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-                signIn();
+                editName.setText("");
+                editDOB.setText("");
+                nameLabel.setVisibility(View.INVISIBLE);
+                dobLabel.setVisibility(View.INVISIBLE);
+                editName.setVisibility(View.INVISIBLE);
+                editDOB.setVisibility(View.INVISIBLE);
+                signUpBtn.setVisibility(View.VISIBLE);
+                signInBtn.setVisibility(View.INVISIBLE);
             }
         });
+
+        Button submitButton = findViewById(R.id.submit);
+        submitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (editName.getVisibility() == View.INVISIBLE && editDOB.getVisibility() == View.INVISIBLE){
+                    signIn();
+                }
+                else {
+                    signUp();
+                }
+            }
+        });
+
     }
 
     //check if password is strong enough

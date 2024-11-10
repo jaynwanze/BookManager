@@ -34,7 +34,7 @@ public class DBHandler extends SQLiteOpenHelper {
     // build sql create statements to create tables in DB
         String userSqlStatement = "CREATE TABLE " + TABLE_USER +" ("+
                 COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COL_EMAIL + " TEXT, " +
+                COL_EMAIL + " TEXT COLLATE NOCASE, " +
                 COL_PASSWORD + " TEXT, " +
                 COL_NAME + " TEXT, " +
                 COL_DOB + " TEXT)";

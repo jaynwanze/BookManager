@@ -2,6 +2,7 @@ package com.example.bookmanager.db.dao;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.example.bookmanager.db.handler.DBHandler;
 import com.example.bookmanager.pojo.User;
@@ -20,7 +21,8 @@ public class UserDAO {
     }
 
     public boolean createUser(String email , String password , String name , String dob)  {
-        String sqlInsertStatement = "INSERT INTO " + TABLE_USER + " (" + COL_EMAIL + ", " + COL_PASSWORD + ", " + COL_NAME + ", " + COL_DOB + ") VALUES ('" + email + "','" + password + "','" + name + "','" + dob + "')";        try (SQLiteDatabase db = dbhandler.getWritableDatabase()) {
+        String sqlInsertStatement = "INSERT INTO " + TABLE_USER + " (" + COL_EMAIL + ", " + COL_PASSWORD + ", " + COL_NAME + ", " + COL_DOB + ") VALUES ('" + email.toLowerCase() + "','" + password + "','" + name + "','" + dob + "')";
+        try (SQLiteDatabase db = dbhandler.getWritableDatabase()) {
             db.execSQL(sqlInsertStatement);
             return true;
         } catch (Exception e) {
@@ -31,12 +33,12 @@ public class UserDAO {
         }
     }
 
-    public boolean signInUser(String userEmail , String userPassowrd)   {
+    public boolean signInUser(String userEmail , String userPassword)   {
         SQLiteDatabase db = dbhandler.getReadableDatabase();
-        String sqlSelect = "SELECT * FROM " + TABLE_USER + " WHERE " + COL_EMAIL + " = '" + userEmail + "' AND " + COL_PASSWORD + " = '" + userPassowrd + "'";
+        String sqlSelect = "SELECT * FROM " + TABLE_USER + " WHERE " + COL_EMAIL + " = '" + userEmail + "' AND " + COL_PASSWORD + " = '" + userPassword + "'";
         //using rawQuery when return a cursor
         Cursor cursor = db.rawQuery(sqlSelect,null);
-        if (cursor.moveToFirst()) return cursor.getString(1).equalsIgnoreCase(userEmail) && cursor.getString(2).equals(userPassowrd);
+        if (cursor.moveToFirst()) return cursor.getString(1).equalsIgnoreCase(userEmail) && cursor.getString(2).equals(userPassword);
         dbhandler.close();
         return false;
 
@@ -49,6 +51,7 @@ public class UserDAO {
         //using rawQuery when return a cursor
         Cursor cursor = db.rawQuery(sqlSelect,null);
         if (cursor.moveToFirst()) return cursor.getString(1).equalsIgnoreCase(userEmail);
+
         dbhandler.close();
         return false;
 

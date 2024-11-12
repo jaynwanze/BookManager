@@ -44,4 +44,10 @@
     <string name="go_to_sign_up_page">Go To Sign Up Page</string>
     <string name="go_to_sign_in_page">Go to sign in page</string>
     <string name="submit">submit</string>
+    <string name="preferences">Preferences</string>
+    <string name="book_manager">Book Manager</string>
+    <string name="navigation_drawer_open">Open</string>
+    <string name="navigation_drawer_close">Close</string>
+    <string name="user_avatar">User Avatar</string>
+    <string name="user_name">User Name</string>
 </resources>

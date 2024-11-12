@@ -166,7 +166,9 @@ public class SignUpActivity extends AppCompatActivity {
         editName.setText("");
         editDOB.setText("");
         Toast.makeText(SignUpActivity.this, "User Created", Toast.LENGTH_LONG).show();
-        //Intent intent = new Intent(SignUpActivity.this, HomepageActivity.class );
+        Intent intent = new Intent(SignUpActivity.this, HomePageActivity.class );
+        intent.putExtra("userEmail", userEmail);
+        startActivity(intent);
     }
 
     //sign in user
@@ -202,8 +204,9 @@ public class SignUpActivity extends AppCompatActivity {
         editEmail.setText("");
         editPassword.setText("");
         Toast.makeText(SignUpActivity.this, "User Signed In", Toast.LENGTH_LONG).show();
-        //Intent intent = new Intent(SignUpActivity.this, HomepageActivity.class);
-    }
+        Intent intent = new Intent(SignUpActivity.this, HomePageActivity.class );
+        intent.putExtra("userEmail", userEmail);
+        startActivity(intent);    }
 
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {

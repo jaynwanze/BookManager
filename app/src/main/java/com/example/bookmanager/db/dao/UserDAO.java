@@ -64,10 +64,11 @@ public class UserDAO {
         Cursor cursor = db.rawQuery(sqlSelect,null);
         User user = new User();
             if (cursor.moveToFirst()) {
-                user.setEmail(cursor.getString(0));
-                user.setPassword(cursor.getString(1));
-                user.setName(cursor.getString(2));
-                user.setDob(cursor.getString(3));
+                user.setId(cursor.getInt(0));
+                user.setEmail(cursor.getString(1));
+                user.setPassword(cursor.getString(2));
+                user.setName(cursor.getString(3));
+                user.setDob(cursor.getString(4));
                 return user;
             }
         dbhandler.close();

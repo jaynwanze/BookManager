@@ -5,18 +5,22 @@
     android:id="@+id/main_menu"
     tools:context=".MainMenu">
 
-
-    <item android:id="@+id/action_profile"
-        android:title="@string/profile"
-    android:orderInCategory="10"
-    app:showAsAction="never" />
-
     <item android:id="@+id/action_info"
         android:title="@string/information"
         android:orderInCategory="10"
         android:icon=
             "@android:drawable/ic_menu_info_details"
         app:showAsAction="ifRoom" />
+
+    <item android:id="@+id/action_profile"
+        android:title="@string/profile"
+    android:orderInCategory="10"
+    app:showAsAction="never" />
+
+    <item android:id="@+id/action_preferences"
+        android:title="@string/preferences"
+        android:orderInCategory="10"
+        app:showAsAction="never" />
 
     <item android:id="@+id/action_logout"
         android:title="@string/logout"

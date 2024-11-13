@@ -44,43 +44,14 @@ public class HomePageActivity extends AppCompatActivity {
     private ArrayList<Book> books;
     private String currentSelectedCategory;
     private String currentSelectedStatus;
+    private boolean isReturningFromAnotherActivity = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.nav_drawer_menu); // Set the Navigation Drawer layout
-
-        // Get references to DrawerLayout and NavigationView
-        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        ActionBar supportActionBar = getSupportActionBar();
-        if (supportActionBar != null) {
-            supportActionBar.setDisplayHomeAsUpEnabled(true);
-        }
-
-        // Set up ActionBarDrawerToggle (for the hamburger icon)
-        this.toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-
-        // Handle navigation item clicks
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                int id = item.getItemId();
-
-                  if (id == R.id.nav_home) {
-                    // Handle home navigation
-                } else if (id == R.id.nav_profile) {
-                    // Handle profile navigation
-                }
-
-                drawerLayout.closeDrawer(GravityCompat.START);
-                return true;
-            }
-        });
-
+        setContentView(R.layout.nav_drawer_menu);
+        setNavigationView();// Set the Navigation Drawer layout
         // Apply window insets to the content view (activity_home_page)
         View contentView = findViewById(R.id.activity_home_page); //
         ViewCompat.setOnApplyWindowInsetsListener(contentView, (v, insets) -> {
@@ -88,63 +59,10 @@ public class HomePageActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        setHeaderView();// set header view
+        setFilterTabs();// set filter tabs
+        setRecyclerView();// set recycler view
 
-
-        //get user email from intent
-        User user = null;
-        Intent intent = getIntent();
-        this.currentUserEmail = intent.getStringExtra("userEmail");
-        try{ this.dbHandler = new DBHandler(this);
-            UserDAO userDAO = new UserDAO(dbHandler);
-            user = userDAO.getUserLoggedIn(this.currentUserEmail);
-            dbHandler.close();
-            Toast.makeText(HomePageActivity.this, "Welcome " + user.getName(), Toast.LENGTH_LONG).show();
-        }
-        catch (Exception e){
-            Toast.makeText(HomePageActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-
-        TextView userNameTextView = findViewById(R.id.userName);
-        if (user != null) {
-            userNameTextView.setText(user.getName());
-            TextView userEmailTextView = findViewById(R.id.userEmail);
-            userEmailTextView.setText(user.getEmail());
-
-        } else {
-            userNameTextView.setText("Homepage");
-        }
-
-
-        //Set up tabs
-        TabLayout filterTabs = findViewById(R.id.filterTabs);
-        filterTabs.addTab(filterTabs.newTab().setText("All"));
-        filterTabs.addTab(filterTabs.newTab().setText("Category"));
-        filterTabs.addTab(filterTabs.newTab().setText("Status"));
-        filterTabs.selectTab(filterTabs.getTabAt(0));
-        filterTabs.setTabGravity(TabLayout.GRAVITY_FILL);
-        filterTabs.setTabMode(TabLayout.MODE_FIXED);
-        TextView textView = findViewById(R.id.filter_display_text);
-        textView.setText(R.string.displaying_all_books);
-        currentSelectedCategory = null;
-        currentSelectedStatus = null;
-        // Handle tab selection
-        filterTabs.addOnTabSelectedListener( new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                // Apply filter based on selected tab
-                applyFilter(tab.getPosition());
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-                // Not needed for this case
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-                applyFilter(tab.getPosition());
-            }
-        });
 
         //set up search view and on query text listener
         SearchView searchView = findViewById(R.id.search_view);
@@ -162,23 +80,6 @@ public class HomePageActivity extends AppCompatActivity {
             }
         });
 
-
-        // Set up RecyclerView
-        RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
-        mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setNestedScrollingEnabled(false);
-        LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        this.books = new ArrayList<>();
-        this.mAdapter = new BookAdapter(this.books); // Initialize mAdapter here
-        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
-        mRecyclerView.setAdapter(mAdapter);
-
-        //Mock data
-       for (int i = 0; i < 20; i++) {
-           Book book = new Book(i, "Title " + i, "Author " + i, "Category " + i, "Start Date " + i, "Review " + i, "Status " + i);
-           this.books.add(book);
-       }
     }
 
     @Override
@@ -295,6 +196,165 @@ public class HomePageActivity extends AppCompatActivity {
 
                 break;
         }
+    }
+
+    private void setHeaderView() {
+        //get user email from intent
+        User user = null;
+        Intent intent = getIntent();
+        this.currentUserEmail = intent.getStringExtra("userEmail");
+        try{ this.dbHandler = new DBHandler(this);
+            UserDAO userDAO = new UserDAO(dbHandler);
+            user = userDAO.getUserLoggedIn(this.currentUserEmail);
+            dbHandler.close();
+            Toast.makeText(HomePageActivity.this, "Welcome " + user.getName(), Toast.LENGTH_LONG).show();
+        }
+        catch (Exception e){
+            Toast.makeText(HomePageActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+
+        TextView userNameTextView = findViewById(R.id.userName);
+        if (user != null) {
+            userNameTextView.setText(user.getName());
+            TextView userEmailTextView = findViewById(R.id.userEmail);
+            userEmailTextView.setText(user.getEmail());
+
+        } else {
+            userNameTextView.setText("Homepage");
+        }
+    }
+
+    private void setNavigationView(){
+        // Get references to DrawerLayout and NavigationView
+        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        ActionBar supportActionBar = getSupportActionBar();
+        if (supportActionBar != null) {
+            supportActionBar.setDisplayHomeAsUpEnabled(true);
+        }
+
+        // Set up ActionBarDrawerToggle (for the hamburger icon)
+        this.toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        // Handle navigation item clicks
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                int id = item.getItemId();
+
+                if (id == R.id.nav_home) {
+                    // Handle home navigation
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                    return true;
+                }
+                else if (id == R.id.nav_add_book) {
+                    Intent intent = new Intent(HomePageActivity.this, AddBookActivity.class);
+                    intent.putExtra("userEmail", currentUserEmail);
+                    startActivity(intent);
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                    return true;
+                }
+
+                else if (id == R.id.nav_profile) {
+                    // Handle profile navigation
+                    Intent intent = new Intent(HomePageActivity.this, ProfileActivity.class);
+                    intent.putExtra("userEmail", currentUserEmail);
+                    startActivity(intent);
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                    return true;
+                }
+                else if (id == R.id.nav_preferences) {
+                    // Handle preferences navigation
+                    Intent intent = new Intent(HomePageActivity.this, PreferencesActivity.class);
+                    intent.putExtra("userEmail", currentUserEmail);
+                    startActivity(intent);
+                    drawerLayout.closeDrawer(GravityCompat.START);
+                    return true;
+                }
+
+                drawerLayout.closeDrawer(GravityCompat.START);
+                return true;
+            }
+        });
+    }
+
+    private void setFilterTabs() {
+
+        //Set up tabs
+        TabLayout filterTabs = findViewById(R.id.filterTabs);
+        filterTabs.addTab(filterTabs.newTab().setText("All"));
+        filterTabs.addTab(filterTabs.newTab().setText("Category"));
+        filterTabs.addTab(filterTabs.newTab().setText("Status"));
+        filterTabs.selectTab(filterTabs.getTabAt(0));
+        filterTabs.setTabGravity(TabLayout.GRAVITY_FILL);
+        filterTabs.setTabMode(TabLayout.MODE_FIXED);
+        TextView textView = findViewById(R.id.filter_display_text);
+        textView.setText(R.string.displaying_all_books);
+        currentSelectedCategory = null;
+        currentSelectedStatus = null;
+        // Handle tab selection
+        filterTabs.addOnTabSelectedListener( new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                // Apply filter based on selected tab
+                applyFilter(tab.getPosition());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+                // Not needed for this case
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+                applyFilter(tab.getPosition());
+            }
+        });
+    }
+
+    private void setRecyclerView(){
+        // Set up RecyclerView
+        RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setNestedScrollingEnabled(false);
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        this.books = new ArrayList<>();
+        this.mAdapter = new BookAdapter(this.books, this.currentUserEmail); // Initialize mAdapter here
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
+        mRecyclerView.setAdapter(mAdapter);
+
+        //Mock data
+        for (int i = 0; i < 20; i++) {
+            Book book = new Book(i, "Title " + i, "Author " + i, "Category " + i, "Start Date " + i, "Review " + i, "Status " + i);
+            this.books.add(book);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        dbHandler.close();
+    }
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        if (isReturningFromAnotherActivity) {
+            //refresh view
+            setHeaderView();
+            //refresh dataset of books
+            //TODO
+            isReturningFromAnotherActivity = false;
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        isReturningFromAnotherActivity = true;
     }
 
 

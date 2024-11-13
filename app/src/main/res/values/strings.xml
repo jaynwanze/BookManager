@@ -58,6 +58,17 @@
     <string name="displaying_books_with_status">"Displaying books with status: "</string>
     <string name="please_select_a_category">Please select a category</string>
     <string name="please_select_a_status">Please select a status</string>
+    <string name="title">Title</string>
+    <string name="enter_title">Enter title...</string>
+    <string name="home">Home</string>
+    <string name="add_book">Add Book</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_preferences">Preferences</string>
+    <string name="mm_dd_yyyy">MM/DD/YYYY</string>
+    <string name="update_profile">Update Profile</string>
+    <string name="enter_review">Enter review...</string>
+    <string name="review">Review:</string>
+    <string name="author">Author:</string>
     <string-array name="category_options">
         <item>Fantasy</item>
         <item>Sci-fi</item>

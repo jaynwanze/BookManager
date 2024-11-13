@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_add_book"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.AddBookActivity">
+
+
+    <TextView
+        android:id="@+id/add_book_label"
+        android:layout_width="210dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="16dp"
+        android:background="@color/black"
+        android:gravity="center"
+        android:text="Add Book"
+        android:textColor="@color/light_grey"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/title_label"
+        android:layout_width="100dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="26dp"
+        android:gravity="center"
+        android:text="Title: "
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/author_label"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.012"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.556" />
+
+    <TextView
+        android:id="@+id/author_label"
+        android:layout_width="100dp"
+        android:layout_height="30dp"
+        android:gravity="center"
+        android:text="Author: "
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.241" />
+
+    <TextView
+        android:id="@+id/category_label"
+        android:layout_width="100dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="44dp"
+        android:gravity="center"
+        android:text="Category: "
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.012"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/author_label"
+        app:layout_constraintVertical_bias="0.002" />
+
+    <TextView
+        android:id="@+id/start_date_label"
+        android:layout_width="102dp"
+        android:layout_height="58dp"
+        android:layout_marginTop="40dp"
+        android:gravity="center"
+        android:text="Start Date: "
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.019"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/category_label"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/status_label"
+        android:layout_width="82dp"
+        android:layout_height="54dp"
+        android:layout_marginTop="37dp"
+        android:gravity="center"
+        android:text="Status: "
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/status_dropdown"
+        app:layout_constraintHorizontal_bias="0.372"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/start_date_label"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/review_label"
+        android:layout_width="102dp"
+        android:layout_height="58dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="34dp"
+        android:gravity="center"
+        android:text="Review: "
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/status_label"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <EditText
+        android:id="@+id/edit_title"
+        android:layout_width="250dp"
+        android:layout_height="53dp"
+        android:layout_marginTop="80dp"
+        android:layout_marginEnd="20dp"
+        android:hint="@string/enter_title"
+        android:inputType="textEmailAddress"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/title_label"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/author_edit"
+        android:layout_width="250dp"
+        android:layout_height="53dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="20dp"
+        android:hint="Enter Author..."
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/author_label"
+        app:layout_constraintTop_toBottomOf="@+id/edit_title" />
+
+    <Spinner
+        android:id="@+id/category_dropdown"
+        android:layout_width="250dp"
+        android:layout_height="53dp"
+        android:layout_marginTop="21dp"
+        android:layout_marginEnd="20dp"
+        android:background="@color/light_grey"
+        android:entries="@array/category_options"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/author_edit"
+        app:layout_constraintVertical_bias="0.004" />
+
+    <EditText
+        android:id="@+id/start_date_edit"
+        android:layout_width="250dp"
+        android:layout_height="53dp"
+        android:layout_marginTop="32dp"
+        android:hint="@string/dd_mm_yyyy"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.32"
+        app:layout_constraintStart_toEndOf="@+id/start_date_label"
+        app:layout_constraintTop_toBottomOf="@+id/category_dropdown" />
+
+    <Spinner
+        android:id="@+id/status_dropdown"
+        android:layout_width="250dp"
+        android:layout_height="53dp"
+        android:layout_marginEnd="20dp"
+        android:background="@color/light_grey"
+        android:entries="@array/category_status"
+        app:layout_constraintBottom_toTopOf="@+id/review_edit"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/start_date_edit" />
+
+    <EditText
+        android:id="@+id/review_edit"
+        android:layout_width="250dp"
+        android:layout_height="53dp"
+        android:layout_marginBottom="176dp"
+        android:hint="Enter review..."
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.509"
+        app:layout_constraintStart_toEndOf="@+id/review_label" />
+
+    <Button
+        android:id="@+id/add_book"
+        android:layout_width="109dp"
+        android:layout_height="75dp"
+        android:text="Add Book"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/review_edit" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

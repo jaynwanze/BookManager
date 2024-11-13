@@ -1,20 +1,24 @@
 package com.example.bookmanager.utils;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.bookmanager.R;
+import com.example.bookmanager.activity.UpdateBookActivity;
 import com.example.bookmanager.pojo.Book;
 
 import java.util.ArrayList;
 
 public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder> {
     private ArrayList<Book> mylistvalues;
+    private String currentUserEmail;
     // Provide a reference to the views for each data item
     public static class BookViewHolder extends RecyclerView.ViewHolder {
         public TextView txtView; //refer to the text view of row layout
@@ -24,10 +28,10 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
 
         }
     }
-    // constructor - Provide the dataset to the Adapter
-//myDataset is passed when called to create an adapter object
-    public BookAdapter(ArrayList<Book> myDataset) {
+    //Book Adapter Constructor
+    public BookAdapter(ArrayList<Book> myDataset, String currentUserEmail) {
         mylistvalues = myDataset;
+        this.currentUserEmail = currentUserEmail;
     }
     // Create new views (invoked by the layout manager)
     @NonNull
@@ -48,12 +52,29 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
         int finalPosition = position;
         Book book = mylistvalues.get(finalPosition);
         holder.txtView.setText(book.toString());
-
+        // Set click listener for the text view
         holder.txtView.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-                Book book = mylistvalues.get(finalPosition);
-                remove(finalPosition);
+                AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
+                builder.setTitle(book.getTitle() + " by: " + book.getAuthor());
+                if (book.getReview() == null) {
+                    builder.setMessage("No review available - please update to add a review");
+                }
+                else {
+                    builder.setMessage("Review: " + book.getReview());
+                }
+
+                builder.setPositiveButton("Update", (dialog, which) -> {
+                   Intent intent = new Intent(v.getContext(), UpdateBookActivity.class);
+                   intent.putExtra("userEmail", currentUserEmail);
+                   intent.putExtra("bookId", book.getId());
+                   v.getContext().startActivity(intent);
+                });
+                builder.setNegativeButton("Remove", (dialog, which) -> {
+                    remove(finalPosition);
+                });
+                builder.show();
             }
         });
     }

@@ -4,22 +4,22 @@
     <item
         android:id="@+id/nav_home"
         android:textColor="@color/dark_grey"
-        android:title="Home" />
+        android:title="@string/home" />
 
     <item
-        android:id="@+id/nav_books"
+        android:id="@+id/nav_add_book"
         android:textColor="@color/dark_grey"
-        android:title="Add Book" />
+        android:title="@string/add_book" />
 
     <item
         android:id="@+id/nav_profile"
         android:textColor="@color/dark_grey"
-        android:title="Profile" />
+        android:title="@string/nav_profile" />
 
     <item
         android:id="@+id/nav_preferences"
         android:textColor="@color/dark_grey"
-        android:title="Preferences" />
+        android:title="@string/nav_preferences" />
 
     <!-- Add more menu items as needed -->
 

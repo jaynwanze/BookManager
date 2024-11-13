@@ -2,7 +2,6 @@ package com.example.bookmanager.db.dao;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.Log;
 
 import com.example.bookmanager.db.handler.DBHandler;
 import com.example.bookmanager.pojo.User;
@@ -77,4 +76,17 @@ public class UserDAO {
 
     }
 
+    public boolean updateUserProfile(String name , String dob , String userEmail) {
+        SQLiteDatabase db = dbhandler.getWritableDatabase();
+        String sqlUpdate = "UPDATE " + TABLE_USER + " SET " + COL_NAME + " = '" + name + "', " + COL_DOB + " = '" + dob + "' WHERE " + COL_EMAIL + " = '" + userEmail + "'";
+        try {
+            db.execSQL(sqlUpdate);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+        finally {
+            dbhandler.close();
+        }
+    }
 }

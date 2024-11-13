@@ -37,7 +37,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
 // create a new view
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View itemView = inflater.inflate(R.layout.row_layout, parent, false); //false: inflate the row
-//layout to parent and return view, if true return parent+view
+
         BookViewHolder viewHolder = new BookViewHolder(itemView);
         return viewHolder;
     }
@@ -77,5 +77,10 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
     public void update(int position, Book item)  {
         mylistvalues.set(position, item);
         notifyItemChanged(position);
+    }
+
+    public void updateDataSet(ArrayList<Book> newData) {
+        this.mylistvalues = newData;
+        notifyDataSetChanged();
     }
 }

@@ -50,4 +50,24 @@
     <string name="navigation_drawer_close">Close</string>
     <string name="user_avatar">User Avatar</string>
     <string name="user_name">User Name</string>
+    <string name="all">All</string>
+    <string name="category">Category</string>
+    <string name="status">Status</string>
+    <string name="displaying_all_books">Displaying all books</string>
+    <string name="displaying_books_in_category">"Displaying books in category: "</string>
+    <string name="displaying_books_with_status">"Displaying books with status: "</string>
+    <string name="please_select_a_category">Please select a category</string>
+    <string name="please_select_a_status">Please select a status</string>
+    <string-array name="category_options">
+        <item>Fantasy</item>
+        <item>Sci-fi</item>
+        <item>Technology</item>
+        <item>Life Style</item>
+        <item>Romance</item>
+    </string-array>
+    <string-array name="category_status">
+        <item>In progress</item>
+        <item>Finished</item>
+    </string-array>
+
 </resources>

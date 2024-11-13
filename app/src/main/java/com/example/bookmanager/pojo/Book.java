@@ -91,7 +91,6 @@ public class Book
     public String toString()
     {
         return
-                "ID: " + this.id +
                         " Title: " + this.title +
                         " Author: " + this.author +
                         " Category: " + this.category +

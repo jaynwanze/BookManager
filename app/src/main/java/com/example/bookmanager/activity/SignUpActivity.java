@@ -9,6 +9,7 @@ import android.widget.*;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -17,7 +18,11 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.bookmanager.R;
 import com.example.bookmanager.db.dao.UserDAO;
 import com.example.bookmanager.db.handler.DBHandler;
+import com.example.bookmanager.pojo.Book;
 import com.example.bookmanager.textchange.TextChangeHandler;
+import com.google.android.material.tabs.TabLayout;
+
+import java.util.ArrayList;
 
 public class SignUpActivity extends AppCompatActivity {
     private DBHandler dbhandler;
@@ -35,49 +40,38 @@ public class SignUpActivity extends AppCompatActivity {
         dbhandler = new DBHandler(this);
         dbhandler.getWritableDatabase();
 
+        //Set up tabs
+        TabLayout filterTabs = findViewById(R.id.sign_in_tab);
+        filterTabs.addTab(filterTabs.newTab().setText("Sign In"));
+        filterTabs.addTab(filterTabs.newTab().setText("Sign Up"));
+        filterTabs.selectTab(filterTabs.getTabAt(0));
+        filterTabs.setTabGravity(TabLayout.GRAVITY_FILL);
+        filterTabs.setTabMode(TabLayout.MODE_FIXED);
+        // Handle tab selection
+        filterTabs.addOnTabSelectedListener( new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                // Apply filter based on selected tab
+                applyFilter(tab.getPosition());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+                // Not needed for this case
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+                applyFilter(tab.getPosition());
+            }
+        });
+
         //add text change listener to password field
         TextChangeHandler tch = new TextChangeHandler(this);
         EditText editPassword = findViewById(R.id.password_toggle);
         editPassword.addTextChangedListener(tch);
-        TextView nameLabel = findViewById(R.id.name_label);
-        TextView dobLabel = findViewById(R.id.DOB_label);
-
         EditText editName = findViewById(R.id.name_edit);
         EditText editDOB = findViewById(R.id.name_dob);
-
-
-        //add click listener to sign up button
-        Button signUpBtn = findViewById(R.id.sign_up_button);
-        Button signInBtn = findViewById(R.id.sign_in_button);
-
-        //add click listener to signup button
-        signUpBtn.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v){
-                editName.setText("");
-                editDOB.setText("");
-                nameLabel.setVisibility(View.VISIBLE);
-                dobLabel.setVisibility(View.VISIBLE);
-                editName.setVisibility(View.VISIBLE);
-                editDOB.setVisibility(View.VISIBLE);
-                signInBtn.setVisibility(View.VISIBLE);
-                signUpBtn.setVisibility(View.INVISIBLE);
-            }
-        });
-
-        signInBtn.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v){
-                editName.setText("");
-                editDOB.setText("");
-                nameLabel.setVisibility(View.INVISIBLE);
-                dobLabel.setVisibility(View.INVISIBLE);
-                editName.setVisibility(View.INVISIBLE);
-                editDOB.setVisibility(View.INVISIBLE);
-                signUpBtn.setVisibility(View.VISIBLE);
-                signInBtn.setVisibility(View.INVISIBLE);
-            }
-        });
 
         Button submitButton = findViewById(R.id.submit);
         submitButton.setOnClickListener(new View.OnClickListener() {
@@ -207,6 +201,38 @@ public class SignUpActivity extends AppCompatActivity {
         Intent intent = new Intent(SignUpActivity.this, HomePageActivity.class );
         intent.putExtra("userEmail", userEmail);
         startActivity(intent);    }
+
+
+    private void applyFilter(int tabPosition) {
+
+        TextView nameLabel = findViewById(R.id.name_label);
+        TextView dobLabel = findViewById(R.id.DOB_label);
+
+        EditText editName = findViewById(R.id.name_edit);
+        EditText editDOB = findViewById(R.id.name_dob);
+        //Initial display text
+        TextView textView = findViewById(R.id.filter_display_text);
+
+        switch (tabPosition) {
+            case 0: // Sign In
+
+                editName.setText("");
+                editDOB.setText("");
+                nameLabel.setVisibility(View.INVISIBLE);
+                dobLabel.setVisibility(View.INVISIBLE);
+                editName.setVisibility(View.INVISIBLE);
+                editDOB.setVisibility(View.INVISIBLE);
+                break;
+            case 1: // Sign Up
+                editName.setText("");
+                editDOB.setText("");
+                nameLabel.setVisibility(View.VISIBLE);
+                dobLabel.setVisibility(View.VISIBLE);
+                editName.setVisibility(View.VISIBLE);
+                editDOB.setVisibility(View.VISIBLE);
+                break;
+        }
+    }
 
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {

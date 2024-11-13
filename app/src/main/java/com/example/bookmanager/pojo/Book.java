@@ -2,6 +2,7 @@ package com.example.bookmanager.pojo;
 
 import androidx.annotation.NonNull;
 
+
 public class Book
 {
     private int id;
@@ -11,8 +12,9 @@ public class Book
     private String startDate;
     private String review;
     private String status;
+    private int userId;
 
-    public Book (int id, String title, String author, String category, String startDate, String review, String status)
+    public Book (int id, String title, String author, String category, String startDate, String review, String status, int userId)
         {
         this.id = id;
         this.title = title;
@@ -21,6 +23,7 @@ public class Book
         this.startDate = startDate;
         this.review = review;
         this.status = status;
+        this.userId = userId;
     }
 
     public Book ()
@@ -84,6 +87,13 @@ public class Book
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+    public int getUserId() {
+        return userId;
     }
 
     @NonNull

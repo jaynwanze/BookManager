@@ -14,6 +14,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.bookmanager.R;
+import com.example.bookmanager.db.dao.BookDAO;
 import com.example.bookmanager.db.dao.UserDAO;
 import com.example.bookmanager.db.handler.DBHandler;
 import com.example.bookmanager.pojo.Book;
@@ -39,12 +40,11 @@ public class UpdateBookActivity extends AppCompatActivity {
         dbhandler.getWritableDatabase();
         currentUserEmail = getIntent().getStringExtra("userEmail");
         int bookId = getIntent().getIntExtra("bookId", -1);
-        //Book book = dbhandler.getBook(bookId);
+        BookDAO bookDAO = new BookDAO(dbhandler);
         UserDAO userDAO = new UserDAO(dbhandler);
         User user = userDAO.getUserLoggedIn(currentUserEmail);
-
-        // set books details
-        /*
+        Book book = getIntent().getParcelableExtra("book");
+        if (book != null) {
         TextView titleView = findViewById(R.id.view_title);
         titleView.setText(book.getTitle());
         TextView authorView = findViewById(R.id.view_author);
@@ -57,9 +57,7 @@ public class UpdateBookActivity extends AppCompatActivity {
         } else {
             statusTab.setSelection(1);
         }
-
-         */
-
+    }
         Button updateBookBtn = findViewById(R.id.update_book);
         updateBookBtn.setOnClickListener(new View.OnClickListener() {
             @Override

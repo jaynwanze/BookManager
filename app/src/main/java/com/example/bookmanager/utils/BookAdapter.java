@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -12,6 +13,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.bookmanager.R;
 import com.example.bookmanager.activity.UpdateBookActivity;
+import com.example.bookmanager.db.dao.BookDAO;
+import com.example.bookmanager.db.handler.DBHandler;
 import com.example.bookmanager.pojo.Book;
 
 import java.util.ArrayList;
@@ -19,6 +22,7 @@ import java.util.ArrayList;
 public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder> {
     private ArrayList<Book> mylistvalues;
     private String currentUserEmail;
+    private DBHandler dbHandler;
     // Provide a reference to the views for each data item
     public static class BookViewHolder extends RecyclerView.ViewHolder {
         public TextView txtView; //refer to the text view of row layout
@@ -29,9 +33,10 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
         }
     }
     //Book Adapter Constructor
-    public BookAdapter(ArrayList<Book> myDataset, String currentUserEmail) {
-        mylistvalues = myDataset;
+    public BookAdapter(ArrayList<Book> myDataset, String currentUserEmail, DBHandler dbHandler) {
+        this.mylistvalues = myDataset;
         this.currentUserEmail = currentUserEmail;
+        this.dbHandler = dbHandler;
     }
     // Create new views (invoked by the layout manager)
     @NonNull
@@ -58,7 +63,8 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
             public void onClick(View v){
                 AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
                 builder.setTitle(book.getTitle() + " by: " + book.getAuthor());
-                if (book.getReview() == null) {
+                //fix review not showing
+                if (book.getReview().isEmpty() || book.getReview() == null) {
                     builder.setMessage("No review available - please update to add a review");
                 }
                 else {
@@ -72,7 +78,15 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
                    v.getContext().startActivity(intent);
                 });
                 builder.setNegativeButton("Remove", (dialog, which) -> {
-                    remove(finalPosition);
+                    BookDAO bookDAO = new BookDAO(dbHandler);
+                    boolean bookRemoved = bookDAO.removeBook(book.getId());
+                  if (bookRemoved) {
+                      remove(finalPosition);
+                      Toast.makeText(v.getContext(), "Book removed", Toast.LENGTH_SHORT).show();
+                  }
+                  else {
+                      Toast.makeText(v.getContext(), "Book not removed", Toast.LENGTH_SHORT).show();
+                  }
                 });
                 builder.show();
             }
@@ -81,7 +95,12 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
     // Return the size of your dataset
     @Override
     public int getItemCount() {
-        return mylistvalues.size();
+        if (mylistvalues != null) {
+            return  mylistvalues.size();
+        }
+        else {
+            return 0;
+        }
     }
 
     public void add(int position, Book item)

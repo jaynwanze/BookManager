@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,6 +17,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.bookmanager.R;
+import com.example.bookmanager.db.dao.BookDAO;
+import com.example.bookmanager.db.dao.UserDAO;
 import com.example.bookmanager.db.handler.DBHandler;
 import com.example.bookmanager.pojo.Book;
 import com.example.bookmanager.pojo.User;
@@ -25,6 +28,8 @@ import java.util.ArrayList;
 public class AddBookActivity extends AppCompatActivity {
     private DBHandler dbhandler;
     private String currentUserEmail;
+    private User currentUser ;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +49,8 @@ public class AddBookActivity extends AppCompatActivity {
         //get user email from intent
         Intent intent = getIntent();
         this.currentUserEmail = intent.getStringExtra("userEmail");
+        UserDAO userDAO = new UserDAO(dbhandler);
+        currentUser = userDAO.getUserLoggedIn(currentUserEmail);
 
         //add text change listener to password field
         //Cmake this a callback
@@ -76,9 +83,36 @@ public class AddBookActivity extends AppCompatActivity {
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               //
+                addBook();
             }
         });
 
+    }
+    private void addBook() {
+        EditText titleEdit = findViewById(R.id.edit_title);
+        EditText authorEdit = findViewById(R.id.author_edit);
+        EditText startDateEdit = findViewById(R.id.start_date_edit);
+        EditText reviewEdit = findViewById(R.id.review_edit);
+        Spinner status_dropdown = findViewById(R.id.status_dropdown);
+        Spinner category_dropdown = findViewById(R.id.category_dropdown);
+
+        String title = titleEdit.getText().toString();
+        String author = authorEdit.getText().toString();
+        String category =  category_dropdown.getSelectedItem().toString();
+        String startDate = startDateEdit.getText().toString();
+        String review = reviewEdit.getText().toString();
+        String status = status_dropdown.getSelectedItem().toString();
+        BookDAO bookDAO = new BookDAO(dbhandler);
+        boolean bookAdded = false;
+        if (review.isEmpty()){
+            review = null;
+        }
+        bookAdded  = bookDAO.createBook(title,author, category,startDate,review,status,currentUser.getId());
+        if (bookAdded){
+            Toast.makeText(this, "Book added successfully", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            Toast.makeText(this, "Error adding book", Toast.LENGTH_SHORT).show();
+        }
     }
 }

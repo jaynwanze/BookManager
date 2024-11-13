@@ -2,6 +2,7 @@ package com.example.bookmanager.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -27,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.bookmanager.R;
 import com.example.bookmanager.db.dao.UserDAO;
+import com.example.bookmanager.db.dao.BookDAO;
 import com.example.bookmanager.db.handler.DBHandler;
 import com.example.bookmanager.pojo.Book;
 import com.example.bookmanager.pojo.User;
@@ -45,7 +47,37 @@ public class HomePageActivity extends AppCompatActivity {
     private String currentSelectedCategory;
     private String currentSelectedStatus;
     private boolean isReturningFromAnotherActivity = false;
+    private User currentUser;
 
+
+        public static ArrayList<Book> getMockBooks() {
+            ArrayList<Book> books = new ArrayList<>();
+                String[] categories = {"Fantasy", "Sci-fi", "Technology", "Life Style", "Romance"};
+                String[] statuses = {"In progress", "Finished"};
+
+                books.add(new Book(1, "The Name of the Wind", "Patrick Rothfuss", categories[0], "12/10/2023", "A captivating fantasy tale.", statuses[0], 1));
+                books.add(new Book(2, "Dune", "Frank Herbert", categories[1], "12/10/2023", "A sprawling epic of politics and ecology.", statuses[1], 1));
+                books.add(new Book(3, "Clean Code", "Robert C. Martin", categories[2], "12/10/2023", "A guide to writing readable and maintainable code.", statuses[0], 1));
+                books.add(new Book(4, "Atomic Habits", "James Clear", categories[3], "12/10/2023", "A practical framework for improving habits.", statuses[1], 1));
+                books.add(new Book(5, "The Notebook", "Nicholas Sparks", categories[4], "12/10/2023", "A heartwarming love story.", statuses[0], 1));
+                books.add(new Book(6, "The Way of Kings", "Brandon Sanderson", categories[0], "12/10/2023", "An epic fantasy with a complex magic system.", statuses[1], 1));
+                books.add(new Book(7, "The Martian", "Andy Weir", categories[1], "12/10/2023", "A survival story set on Mars.", statuses[0], 1));
+                books.add(new Book(8, "Eloquent JavaScript", "Marijn Haverbeke", categories[2], "12/10/2023", "A modern introduction to programming.", statuses[1], 1));
+                books.add(new Book(9, "Digital Minimalism", "Cal Newport", categories[3], "12/10/2023", "A philosophy for a focused life in a digital age.", statuses[0], 1));
+                books.add(new Book(10, "Me Before You", "Jojo Moyes", categories[4], "12/10/2023", "A tearjerker romance.", statuses[1], 1));
+                books.add(new Book(11, "A Game of Thrones", "George R.R. Martin", categories[0], "12/10/2023", "The first book in the epic fantasy series.", statuses[0], 1));
+                books.add(new Book(12, "The Hitchhiker's Guide to the Galaxy", "Douglas Adams", categories[1], "12/10/2023", "A hilarious and thought-provoking sci-fi classic.", statuses[1], 1));
+                books.add(new Book(13, "Code Complete", "Steve McConnell", categories[2], "12/10/2023", "A comprehensive guide to software construction.", statuses[0], 1));
+                books.add(new Book(14, "The Power of Habit", "Charles Duhigg", categories[3], "12/10/2023", "An exploration of the science of habit formation.", statuses[1], 1));
+                books.add(new Book(15, "The Love Hypothesis", "Ali Hazelwood", categories[4], "12/10/2023", "A STEMinist romance.", statuses[0], 1));
+                books.add(new Book(16, "Mistborn: The Final Empire", "Brandon Sanderson", categories[0], "12/10/2023", "A fantasy novel with a unique magic system.", statuses[1], 1));
+                books.add(new Book(17, "Project Hail Mary", "Andy Weir", categories[1], "12/10/2023", "A sci-fi thriller about saving humanity.", statuses[0], 1));
+                books.add(new Book(18, "You Don't Know JS", "Kyle Simpson", categories[2], "12/10/2023", "A deep dive into the JavaScript language.", statuses[1], 1));
+                books.add(new Book(19, "Indistractable", "Nir Eyal", categories[3], "12/10/2023", "Strategies for mastering your attention.", statuses[0], 1));
+                books.add(new Book(20, "Red, White & Royal Blue", "Casey McQuiston", categories[4], "12/10/2023", "A LGBTQ+ romance.", statuses[1], 1));
+
+                return books;
+            }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +91,18 @@ public class HomePageActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        this.currentUser = null;
+        Intent intent = getIntent();
+        this.currentUserEmail = intent.getStringExtra("userEmail");
+        try{ this.dbHandler = new DBHandler(this);
+            UserDAO userDAO = new UserDAO(dbHandler);
+            this.currentUser = userDAO.getUserLoggedIn(this.currentUserEmail);
+            dbHandler.close();
+            Toast.makeText(HomePageActivity.this, "Welcome " + this.currentUser .getName(), Toast.LENGTH_LONG).show();
+        }
+        catch (Exception e){
+            Toast.makeText(HomePageActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
         setHeaderView();// set header view
         setFilterTabs();// set filter tabs
         setRecyclerView();// set recycler view
@@ -126,6 +170,7 @@ public class HomePageActivity extends AppCompatActivity {
         //Initial display text
         TextView textView = findViewById(R.id.filter_display_text);
 
+
         switch (tabPosition) {
             case 0: // All
                 // Show all books
@@ -147,14 +192,16 @@ public class HomePageActivity extends AppCompatActivity {
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                         currentSelectedCategory = parent.getItemAtPosition(position).toString();
                         textView.setText(getString(R.string.displaying_books_in_category) + currentSelectedCategory);
-                        ArrayList<Book> filteredBooksByCategory = new ArrayList<>();
-                        for (Book book : books) {
-                            if (book.getCategory().equals(currentSelectedCategory)) {
-                                // Filter books by category
-                                filteredBooksByCategory.add(book);
+                        if (books != null) {
+                            ArrayList<Book> filteredBooksByCategory = new ArrayList<>();
+                            for (Book book : books) {
+                                if (book.getCategory().equals(currentSelectedCategory)) {
+                                    // Filter books by category
+                                    filteredBooksByCategory.add(book);
+                                }
                             }
+                            mAdapter.updateDataSet(filteredBooksByCategory);
                         }
-                        mAdapter.updateDataSet(filteredBooksByCategory);
                     }
                     @Override
                     public void onNothingSelected(AdapterView<?> parent) {
@@ -179,14 +226,15 @@ public class HomePageActivity extends AppCompatActivity {
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                         currentSelectedStatus = parent.getItemAtPosition(position).toString();
                         textView.setText(getString(R.string.displaying_books_with_status) + currentSelectedStatus);
-                        ArrayList<Book> filteredBooksByStatus = new ArrayList<>();
-
-                        for (Book book : books) {
-                            if (book.getCategory().equals(currentSelectedStatus)) { // Replace with your category logic
-                                filteredBooksByStatus.add(book);
+                        if (books != null){
+                            ArrayList<Book> filteredBooksByStatus = new ArrayList<>();
+                            for (Book book : books) {
+                                if (book.getCategory().equals(currentSelectedStatus)) { // Replace with your category logic
+                                    filteredBooksByStatus.add(book);
+                                }
                             }
-                        }
                         mAdapter.updateDataSet(filteredBooksByStatus);
+                    }
                     }
                     @Override
                     public void onNothingSelected(AdapterView<?> parent) {
@@ -207,7 +255,6 @@ public class HomePageActivity extends AppCompatActivity {
             UserDAO userDAO = new UserDAO(dbHandler);
             user = userDAO.getUserLoggedIn(this.currentUserEmail);
             dbHandler.close();
-            Toast.makeText(HomePageActivity.this, "Welcome " + user.getName(), Toast.LENGTH_LONG).show();
         }
         catch (Exception e){
             Toast.makeText(HomePageActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -323,15 +370,14 @@ public class HomePageActivity extends AppCompatActivity {
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
         this.books = new ArrayList<>();
-        this.mAdapter = new BookAdapter(this.books, this.currentUserEmail); // Initialize mAdapter here
+        BookDAO bookDAO = new BookDAO(dbHandler);
+        this.books = bookDAO.getAllBooks(this.currentUser.getId());
+        if (this.books == null){
+            Toast.makeText(this, "Book list is empty", Toast.LENGTH_SHORT).show();
+        }
+        this.mAdapter = new BookAdapter(this.books, this.currentUserEmail, dbHandler); // Initialize mAdapter here
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
         mRecyclerView.setAdapter(mAdapter);
-
-        //Mock data
-        for (int i = 0; i < 20; i++) {
-            Book book = new Book(i, "Title " + i, "Author " + i, "Category " + i, "Start Date " + i, "Review " + i, "Status " + i);
-            this.books.add(book);
-        }
     }
 
     @Override
@@ -346,7 +392,16 @@ public class HomePageActivity extends AppCompatActivity {
             //refresh view
             setHeaderView();
             //refresh dataset of books
-            //TODO
+            ArrayList<Book> refreshedBooks = new ArrayList<>();
+            BookDAO bookDAO = new BookDAO(dbHandler);
+            refreshedBooks = bookDAO.getAllBooks(this.currentUser.getId());
+            if (refreshedBooks != null){
+                this.books = refreshedBooks;
+                mAdapter.updateDataSet(refreshedBooks);
+        }
+        else {
+                Toast.makeText(this, "Book list is empty", Toast.LENGTH_SHORT).show();
+            }
             isReturningFromAnotherActivity = false;
         }
     }

@@ -39,7 +39,6 @@ import com.google.android.material.tabs.TabLayout;
 import java.util.ArrayList;
 
 public class HomePageActivity extends AppCompatActivity {
-    private DBHandler dbHandler;
     private String currentUserEmail;
     private ActionBarDrawerToggle toggle;
     private BookAdapter mAdapter;
@@ -92,9 +91,10 @@ public class HomePageActivity extends AppCompatActivity {
             return insets;
         });
         this.currentUser = null;
+        DBHandler dbHandler;
         Intent intent = getIntent();
         this.currentUserEmail = intent.getStringExtra("userEmail");
-        try{ this.dbHandler = new DBHandler(this);
+        try{ dbHandler = new DBHandler(this);
             UserDAO userDAO = new UserDAO(dbHandler);
             this.currentUser = userDAO.getUserLoggedIn(this.currentUserEmail);
             dbHandler.close();
@@ -249,9 +249,10 @@ public class HomePageActivity extends AppCompatActivity {
     private void setHeaderView() {
         //get user email from intent
         User user = null;
+        DBHandler dbHandler;
         Intent intent = getIntent();
         this.currentUserEmail = intent.getStringExtra("userEmail");
-        try{ this.dbHandler = new DBHandler(this);
+        try{ dbHandler = new DBHandler(this);
             UserDAO userDAO = new UserDAO(dbHandler);
             user = userDAO.getUserLoggedIn(this.currentUserEmail);
             dbHandler.close();
@@ -369,13 +370,20 @@ public class HomePageActivity extends AppCompatActivity {
         mRecyclerView.setNestedScrollingEnabled(false);
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
-        this.books = new ArrayList<>();
+        if (this.books == null) {
+            this.books = new ArrayList<>();
+        }
+        DBHandler dbHandler = new DBHandler(this);
         BookDAO bookDAO = new BookDAO(dbHandler);
+        /*ArrayList<Book> mockBooks = getMockBooks();
+        for (int i = 0; i < 20; i++){
+            bookDAO.createBook(mockBooks.get(i).getTitle(), mockBooks.get(i).getAuthor(), mockBooks.get(i).getCategory(), mockBooks.get(i).getStartDate(), mockBooks.get(i).getReview(), mockBooks.get(i).getStatus(), mockBooks.get(i).getUserId());
+        }*/
         this.books = bookDAO.getAllBooks(this.currentUser.getId());
         if (this.books == null){
             Toast.makeText(this, "Book list is empty", Toast.LENGTH_SHORT).show();
         }
-        this.mAdapter = new BookAdapter(this.books, this.currentUserEmail, dbHandler); // Initialize mAdapter here
+        this.mAdapter = new BookAdapter(this.books, this.currentUserEmail); // Initialize mAdapter here
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
         mRecyclerView.setAdapter(mAdapter);
     }
@@ -383,7 +391,6 @@ public class HomePageActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        dbHandler.close();
     }
     @Override
     protected void onRestart() {
@@ -391,17 +398,7 @@ public class HomePageActivity extends AppCompatActivity {
         if (isReturningFromAnotherActivity) {
             //refresh view
             setHeaderView();
-            //refresh dataset of books
-            ArrayList<Book> refreshedBooks = new ArrayList<>();
-            BookDAO bookDAO = new BookDAO(dbHandler);
-            refreshedBooks = bookDAO.getAllBooks(this.currentUser.getId());
-            if (refreshedBooks != null){
-                this.books = refreshedBooks;
-                mAdapter.updateDataSet(refreshedBooks);
-        }
-        else {
-                Toast.makeText(this, "Book list is empty", Toast.LENGTH_SHORT).show();
-            }
+            setRecyclerView();
             isReturningFromAnotherActivity = false;
         }
     }

@@ -2,6 +2,7 @@ package com.example.bookmanager.db.dao;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.example.bookmanager.db.handler.DBHandler;
 import com.example.bookmanager.pojo.Book;
@@ -60,7 +61,8 @@ public class BookDAO {
             Cursor cursor = db.rawQuery(sql, null);
             while (cursor.moveToNext()) {
                 Book book = new Book();
-                book.setId(cursor.getInt(1));
+                book.setId(cursor.getInt(0));
+                book.setUserId(cursor.getInt(1));
                 book.setTitle(cursor.getString(2));
                 book.setAuthor(cursor.getString(3));
                 book.setCategory(cursor.getString(4));
@@ -69,16 +71,16 @@ public class BookDAO {
                 book.setStatus(cursor.getString(7));
                 books.add(book);
             }
-            }
-        catch (Exception e) {
+            cursor.close();
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
-        }
-        finally {
+        } finally {
             dbhandler.close();
         }
         return books;
     }
+
 
     public boolean removeBook(int id) {
         String sql = "DELETE FROM " + TABLE_BOOK + " WHERE " + COL_ID + " = " + id;
@@ -98,12 +100,13 @@ public class BookDAO {
 
     public Book getBook(int id) {
         String sql = "SELECT * FROM " + TABLE_BOOK + " WHERE " + COL_ID + " = " + id;
+        Book book = null;
 
         try (SQLiteDatabase db = dbhandler.getReadableDatabase()) {
             Cursor cursor = db.rawQuery(sql, null);
 
             if (cursor.moveToFirst()) {
-                Book book = new Book();
+                 book = new Book();
 
                 book.setId(cursor.getInt(0));
                 book.setUserId(cursor.getInt(1));
@@ -113,15 +116,14 @@ public class BookDAO {
                 book.setStartDate(cursor.getString(5));
                 book.setReview(cursor.getString(6));
                 book.setStatus(cursor.getString(7));
-
-
-                return book;
             }
+            cursor.close();
         } catch (Exception e) {
             e.printStackTrace();
+            return book;
         } finally {
             dbhandler.close();
-            return null;
         }
+        return book;
     }
 }

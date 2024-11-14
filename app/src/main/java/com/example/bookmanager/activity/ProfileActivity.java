@@ -25,9 +25,7 @@ import com.google.android.material.tabs.TabLayout;
 
 public class ProfileActivity extends AppCompatActivity
 {
-    private DBHandler dbhandler;
     private String currentUserEmail;
-    private User currentUser ;
 
 
     @Override
@@ -40,18 +38,19 @@ public class ProfileActivity extends AppCompatActivity
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        DBHandler dbhandler;
         dbhandler = new DBHandler(this);
         dbhandler.getWritableDatabase();
         currentUserEmail = getIntent().getStringExtra("userEmail");
         UserDAO userDAO = new UserDAO(dbhandler);
-        currentUser = userDAO.getUserLoggedIn(currentUserEmail);
+        User user = userDAO.getUserLoggedIn(currentUserEmail);
 
         //Set up tabs
         // Create a TabLayout and add tabs
         TextView viewName = findViewById(R.id.view_name);
-        viewName.setText(currentUser.getName());
+        viewName.setText(user.getName());
         TextView viewDOB = findViewById(R.id.view_dob);
-        viewDOB.setText(currentUser.getDob());
+        viewDOB.setText(user.getDob());
         TabLayout filterTabs = findViewById(R.id.profile_tabs);
         filterTabs.addTab(filterTabs.newTab().setText("View Profile"));
         filterTabs.addTab(filterTabs.newTab().setText("Update Profile"));
@@ -63,7 +62,7 @@ public class ProfileActivity extends AppCompatActivity
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 // Apply filter based on selected tab
-                applyFilter(tab.getPosition());
+                applyFilter(tab.getPosition(), user);
             }
 
             @Override
@@ -73,7 +72,7 @@ public class ProfileActivity extends AppCompatActivity
 
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
-                applyFilter(tab.getPosition());
+                applyFilter(tab.getPosition(), user);
             }
         });
 
@@ -96,12 +95,14 @@ public class ProfileActivity extends AppCompatActivity
         EditText editDOB = findViewById(R.id.dob_edit);
         String newName = editName.getText().toString();
         String newDOB = editDOB.getText().toString();
+        DBHandler dbhandler = new DBHandler(this);
         UserDAO userDAO = new UserDAO(dbhandler);
         boolean userProfileUpdated = userDAO.updateUserProfile(newName,newDOB,currentUserEmail);
+        User user = userDAO.getUserLoggedIn(currentUserEmail);
         if (userProfileUpdated){
-            currentUser.setName(newName);
-            currentUser.setDob(newDOB);
-            applyFilter(1);
+            user.setName(newName);
+            user.setDob(newDOB);
+            applyFilter(1, user);
             Toast.makeText(this, "Profile updated successfully", Toast.LENGTH_SHORT).show();
         }
         else {
@@ -110,7 +111,7 @@ public class ProfileActivity extends AppCompatActivity
 
     }
 
-    private void applyFilter(int tabPosition) {
+    private void applyFilter(int tabPosition, User currentUser) {
 
         Button updateProfileButton = findViewById(R.id.update_profile);
         TextView nameView = findViewById(R.id.view_name);
@@ -147,8 +148,12 @@ public class ProfileActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        dbhandler.close();
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        this.finish();
+    }
 
 }

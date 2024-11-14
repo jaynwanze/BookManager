@@ -1,6 +1,7 @@
 package com.example.bookmanager.utils;
 
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +23,6 @@ import java.util.ArrayList;
 public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder> {
     private ArrayList<Book> mylistvalues;
     private String currentUserEmail;
-    private DBHandler dbHandler;
     // Provide a reference to the views for each data item
     public static class BookViewHolder extends RecyclerView.ViewHolder {
         public TextView txtView; //refer to the text view of row layout
@@ -33,10 +33,9 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
         }
     }
     //Book Adapter Constructor
-    public BookAdapter(ArrayList<Book> myDataset, String currentUserEmail, DBHandler dbHandler) {
+    public BookAdapter(ArrayList<Book> myDataset, String currentUserEmail ) {
         this.mylistvalues = myDataset;
         this.currentUserEmail = currentUserEmail;
-        this.dbHandler = dbHandler;
     }
     // Create new views (invoked by the layout manager)
     @NonNull
@@ -50,48 +49,46 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
         BookViewHolder viewHolder = new BookViewHolder(itemView);
         return viewHolder;
     }
-
     @Override
     public void onBindViewHolder(BookViewHolder holder, int position) {
-        position = holder.getAdapterPosition();
-        int finalPosition = position;
-        Book book = mylistvalues.get(finalPosition);
+        Book book = mylistvalues.get(position);
         holder.txtView.setText(book.toString());
-        // Set click listener for the text view
-        holder.txtView.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v){
-                AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
-                builder.setTitle(book.getTitle() + " by: " + book.getAuthor());
-                //fix review not showing
-                if (book.getReview().isEmpty() || book.getReview() == null) {
-                    builder.setMessage("No review available - please update to add a review");
-                }
-                else {
-                    builder.setMessage("Review: " + book.getReview());
-                }
+        holder.txtView.setOnClickListener(v -> {
+            Book clickedBook = mylistvalues.get(position);
 
-                builder.setPositiveButton("Update", (dialog, which) -> {
-                   Intent intent = new Intent(v.getContext(), UpdateBookActivity.class);
-                   intent.putExtra("userEmail", currentUserEmail);
-                   intent.putExtra("bookId", book.getId());
-                   v.getContext().startActivity(intent);
-                });
-                builder.setNegativeButton("Remove", (dialog, which) -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
+            builder.setTitle(clickedBook.getTitle() + " by: " + clickedBook.getAuthor());
+            String reviewMessage = (clickedBook.getReview() == null || clickedBook.getReview().isEmpty())
+                    ? "No review available - please update to add a review"
+                    : "Review: " + clickedBook.getReview();
+            builder.setMessage(reviewMessage);
+
+            builder.setPositiveButton("Update", (dialog, which) -> {
+                Intent intent = new Intent(v.getContext(), UpdateBookActivity.class);
+                intent.putExtra("userEmail", currentUserEmail);
+                intent.putExtra("bookId", String.valueOf(clickedBook.getId()));
+                v.getContext().startActivity(intent);
+            });
+
+            builder.setNegativeButton("Remove", (dialog, which) -> {
+                if (position >= 0 && position < mylistvalues.size()) {
+                    DBHandler dbHandler = new DBHandler(v.getContext());
                     BookDAO bookDAO = new BookDAO(dbHandler);
-                    boolean bookRemoved = bookDAO.removeBook(book.getId());
-                  if (bookRemoved) {
-                      remove(finalPosition);
-                      Toast.makeText(v.getContext(), "Book removed", Toast.LENGTH_SHORT).show();
-                  }
-                  else {
-                      Toast.makeText(v.getContext(), "Book not removed", Toast.LENGTH_SHORT).show();
-                  }
-                });
-                builder.show();
-            }
+                    boolean bookRemoved = bookDAO.removeBook(clickedBook.getId());
+                    if (bookRemoved) {
+                        remove(position);
+                        Toast.makeText(v.getContext(), "Book removed", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(v.getContext(), "Book not removed", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+            builder.show();
         });
     }
+
+
+
     // Return the size of your dataset
     @Override
     public int getItemCount() {

@@ -104,8 +104,8 @@ public class AddBookActivity extends AppCompatActivity {
         String status = status_dropdown.getSelectedItem().toString();
         BookDAO bookDAO = new BookDAO(dbhandler);
         boolean bookAdded = false;
-        if (review.isEmpty()){
-            review = null;
+        if (review.isEmpty() | review.isBlank()){
+            review = "";
         }
         bookAdded  = bookDAO.createBook(title,author, category,startDate,review,status,currentUser.getId());
         if (bookAdded){
@@ -115,4 +115,11 @@ public class AddBookActivity extends AppCompatActivity {
             Toast.makeText(this, "Error adding book", Toast.LENGTH_SHORT).show();
         }
     }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        dbhandler.close();
+    }
+
+
 }

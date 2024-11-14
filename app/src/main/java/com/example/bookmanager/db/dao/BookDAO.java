@@ -126,4 +126,21 @@ public class BookDAO {
         }
         return book;
     }
+
+    public boolean updateBook(int id, int userId, String review, String status) {
+        String sql = "UPDATE " + TABLE_BOOK + " SET " +
+                COL_REVIEW + " = '" + review + "', " +
+                COL_STATUS + " = '" + status + "' " +
+                "WHERE " + COL_ID + " = " + id;
+
+        try (SQLiteDatabase db = dbhandler.getWritableDatabase()) {
+            db.execSQL(sql);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            dbhandler.close();
+        }
+    }
 }

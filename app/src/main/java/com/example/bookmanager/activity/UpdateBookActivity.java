@@ -24,8 +24,6 @@ import com.example.bookmanager.pojo.User;
 import com.google.android.material.tabs.TabLayout;
 
 public class UpdateBookActivity extends AppCompatActivity {
-    private String currentUserEmail;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +39,7 @@ public class UpdateBookActivity extends AppCompatActivity {
         DBHandler dbhandler = new DBHandler(this);
 
         // Retrieve Intent extras
-        currentUserEmail = getIntent().getStringExtra("userEmail");
+        String currentUserEmail = getIntent().getStringExtra("userEmail");
         String bookId = getIntent().getStringExtra("bookId");
 
         if (bookId == null || bookId.isEmpty()) {
@@ -78,7 +76,7 @@ public class UpdateBookActivity extends AppCompatActivity {
         updateBookBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                updateBook();
+                updateBook(bookId, user.getId());
             }
         });
     }
@@ -101,8 +99,19 @@ public class UpdateBookActivity extends AppCompatActivity {
 
 
 
-    private void updateBook() {
-        //update book
-
+    private void updateBook(String bookId, int userId) {
+        EditText reviewEdit = findViewById(R.id.review_edit);
+        String review = reviewEdit.getText().toString();
+        Spinner spinner = findViewById(R.id.status_dropdown);
+        String status = spinner.getSelectedItem().toString();
+        DBHandler dbhandler = new DBHandler(this);
+        BookDAO bookDAO = new BookDAO(dbhandler);
+        boolean bookUpdated = bookDAO.updateBook(Integer.parseInt(bookId) ,userId, review, status);
+        if (bookUpdated){
+            Toast.makeText(this, "Book updated successfully", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            Toast.makeText(this, "Error updating book", Toast.LENGTH_SHORT).show();
+        }
     }
 }

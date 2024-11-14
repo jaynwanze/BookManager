@@ -110,17 +110,23 @@ public class HomePageActivity extends AppCompatActivity {
 
         //set up search view and on query text listener
         SearchView searchView = findViewById(R.id.search_view);
-        searchView.setQueryHint("Search book...");
+        searchView.setQueryHint("Search title or author...");
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+                handleSearch(query);
                 return true; // Handle search submission
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                // Handle text changes (optional)
-                return false;
+                if (newText.isEmpty()) {
+                    // Reset to the full list if the search text is cleared
+                    mAdapter.updateDataSet(books);
+                } else {
+                    handleSearch(newText);
+                }
+                return true; // Handle text changes
             }
         });
 
@@ -229,7 +235,7 @@ public class HomePageActivity extends AppCompatActivity {
                         if (books != null){
                             ArrayList<Book> filteredBooksByStatus = new ArrayList<>();
                             for (Book book : books) {
-                                if (book.getCategory().equals(currentSelectedStatus)) { // Replace with your category logic
+                                if (book.getStatus().equals(currentSelectedStatus)) {
                                     filteredBooksByStatus.add(book);
                                 }
                             }
@@ -361,6 +367,22 @@ public class HomePageActivity extends AppCompatActivity {
                 applyFilter(tab.getPosition());
             }
         });
+    }
+
+    private void handleSearch(String query){
+        // Create a list to store books that match the search query
+        ArrayList<Book> filteredBooks = new ArrayList<>();
+
+        for (Book book : this.books) {
+            // Check if the book's title or author contains the search query
+            if (book.getTitle().toLowerCase().contains(query.toLowerCase()) ||
+                    book.getAuthor().toLowerCase().contains(query.toLowerCase())) {
+                filteredBooks.add(book);
+            }
+        }
+
+        // Update the adapter with the filtered list
+        mAdapter.updateDataSet(filteredBooks);
     }
 
     private void setRecyclerView(){

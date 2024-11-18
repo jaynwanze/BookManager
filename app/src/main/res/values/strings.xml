@@ -69,6 +69,8 @@
     <string name="enter_review">Enter review...</string>
     <string name="review">Review:</string>
     <string name="author">Author:</string>
+    <string name="silent_mode">Silent Mode:</string>
+    <string name="books_not_found">Books not found</string>
     <string-array name="category_options">
         <item>Fantasy</item>
         <item>Sci-fi</item>

@@ -21,7 +21,6 @@ import com.example.bookmanager.db.dao.UserDAO;
 import com.example.bookmanager.db.handler.DBHandler;
 import com.example.bookmanager.pojo.Book;
 import com.example.bookmanager.pojo.User;
-import com.google.android.material.tabs.TabLayout;
 
 public class UpdateBookActivity extends AppCompatActivity {
 
@@ -44,7 +43,7 @@ public class UpdateBookActivity extends AppCompatActivity {
 
         if (bookId == null || bookId.isEmpty()) {
             Toast.makeText(this, "Error: Book ID is missing", Toast.LENGTH_SHORT).show();
-            finish(); // Close activity if bookId is invalid
+            finish();
             return;
         }
 
@@ -68,7 +67,7 @@ public class UpdateBookActivity extends AppCompatActivity {
         } else {
             Log.d("UpdateBookActivity", "Book not found with ID: " + bookId);
             Toast.makeText(this, "Book not found", Toast.LENGTH_SHORT).show();
-            finish(); // Close the activity if the book is not found
+            this.finish(); // Close the activity if the book is not found
             return;
         }
 
@@ -96,8 +95,6 @@ public class UpdateBookActivity extends AppCompatActivity {
         super.onBackPressed();
         this.finish();
     }
-
-
 
     private void updateBook(String bookId, int userId) {
         EditText reviewEdit = findViewById(R.id.review_edit);

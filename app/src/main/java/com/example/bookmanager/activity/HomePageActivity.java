@@ -1,12 +1,16 @@
 package com.example.bookmanager.activity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,9 +51,12 @@ public class HomePageActivity extends AppCompatActivity {
     private String currentSelectedStatus;
     private boolean isReturningFromAnotherActivity = false;
     private User currentUser;
+    final String PREFS_NAME = "Preferences";
+    final String SILENT_MODE = "silent_mode";
 
 
-        public static ArrayList<Book> getMockBooks() {
+
+    public static ArrayList<Book> getMockBooks() {
             ArrayList<Book> books = new ArrayList<>();
                 String[] categories = {"Fantasy", "Sci-fi", "Technology", "Life Style", "Romance"};
                 String[] statuses = {"In progress", "Finished"};
@@ -107,7 +114,6 @@ public class HomePageActivity extends AppCompatActivity {
         setFilterTabs();// set filter tabs
         setRecyclerView();// set recycler view
 
-
         //set up search view and on query text listener
         SearchView searchView = findViewById(R.id.search_view);
         searchView.setQueryHint("Search title or author...");
@@ -120,16 +126,20 @@ public class HomePageActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                if (newText.isEmpty()) {
-                    // Reset to the full list if the search text is cleared
-                    mAdapter.updateDataSet(books);
-                } else {
                     handleSearch(newText);
-                }
                 return true; // Handle text changes
             }
         });
 
+
+        SharedPreferences preferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        boolean silentModeEnabled = preferences.getBoolean(SILENT_MODE, false);
+
+        // Set phone to silent mode if enabled
+        if (silentModeEnabled) {
+            AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            audioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
+        }
     }
 
     @Override
@@ -155,8 +165,16 @@ public class HomePageActivity extends AppCompatActivity {
             return true;
         }
         if (item.getItemId() == R.id.action_preferences) {
-            Intent intent = new Intent(this, PreferencesActivity.class);
+            //Create Shared preferences if not already set
+            Context context = getApplicationContext();
+            SharedPreferences preferences =
+                    context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+            boolean silent = preferences.getBoolean(SILENT_MODE, false);
+            Log.d("Silent Mode", "Current Silent Mode: " + silent);
+            //Pass intent to preferences activity
+            Intent intent = new Intent(HomePageActivity.this, PreferencesActivity.class);
             intent.putExtra("userEmail", this.currentUserEmail);
+            intent.putExtra("currentSilentMode", silent);
             startActivity(intent);
             return true;
         }
@@ -175,17 +193,32 @@ public class HomePageActivity extends AppCompatActivity {
     private void applyFilter(int tabPosition) {
         //Initial display text
         TextView textView = findViewById(R.id.filter_display_text);
-
+        TextView emptyTextView = findViewById(R.id.empty_list_text);
+        RecyclerView recyclerView = findViewById(R.id.recycler_view);
 
         switch (tabPosition) {
             case 0: // All
                 // Show all books
                 textView.setText(R.string.displaying_all_books);
                 mAdapter.updateDataSet(this.books); // Assuming myDataset holds all books
+                if (this.books.isEmpty()) {
+                    recyclerView.setVisibility(View.GONE);
+                    emptyTextView.setVisibility(View.VISIBLE);
+                }
+                else {
+                    emptyTextView.setVisibility(View.GONE);
+                    recyclerView.setVisibility(View.VISIBLE);
+                }
                 break;
             case 1: // Category
                 View categoryDropdown = getLayoutInflater().inflate(R.layout.dropdown_category, null);
                 Spinner categorySpinner = categoryDropdown.findViewById(R.id.categorySpinner);
+                String[] categoryArray = getResources().getStringArray(R.array.category_options);
+                for (int i = 0; i < categoryArray.length; i++) {
+                    if (categoryArray[i].equals(currentSelectedCategory)) {
+                        categorySpinner.setSelection(i);
+                    }
+                }
                 // Display the dropdown in a dialog
                 new AlertDialog.Builder(this)
                         .setTitle("Select Category")
@@ -207,6 +240,14 @@ public class HomePageActivity extends AppCompatActivity {
                                 }
                             }
                             mAdapter.updateDataSet(filteredBooksByCategory);
+                            if (filteredBooksByCategory.isEmpty()) {
+                                recyclerView.setVisibility(View.GONE);
+                                emptyTextView.setVisibility(View.VISIBLE);
+                            }
+                            else {
+                                emptyTextView.setVisibility(View.GONE);
+                                recyclerView.setVisibility(View.VISIBLE);
+                            }
                         }
                     }
                     @Override
@@ -220,6 +261,12 @@ public class HomePageActivity extends AppCompatActivity {
                 // Filter by status
                 View statusDropdown = getLayoutInflater().inflate(R.layout.dropdown_status, null);
                 Spinner statusSpinner = statusDropdown.findViewById(R.id.statusSpinner);
+                String[] statusArray = getResources().getStringArray(R.array.category_status);
+                for (int i = 0; i < statusArray.length; i++) {
+                    if (statusArray[i].equals(currentSelectedStatus)) {
+                        statusSpinner.setSelection(i);
+                    }
+                }
                 // Display the dropdown in a dialog
                 new AlertDialog.Builder(this)
                         .setTitle("Select Status")
@@ -240,6 +287,14 @@ public class HomePageActivity extends AppCompatActivity {
                                 }
                             }
                         mAdapter.updateDataSet(filteredBooksByStatus);
+                            if (filteredBooksByStatus.isEmpty()) {
+                                recyclerView.setVisibility(View.GONE);
+                                emptyTextView.setVisibility(View.VISIBLE);
+                            }
+                            else {
+                                emptyTextView.setVisibility(View.GONE);
+                                recyclerView.setVisibility(View.VISIBLE);
+                            }
                     }
                     }
                     @Override
@@ -247,7 +302,6 @@ public class HomePageActivity extends AppCompatActivity {
                         textView.setText(R.string.please_select_a_status);
                     }
                 });
-
                 break;
         }
     }
@@ -268,7 +322,7 @@ public class HomePageActivity extends AppCompatActivity {
         }
 
         TextView userNameTextView = findViewById(R.id.userName);
-        if (user != null) {
+        if (user != null|| user.getName().isEmpty()) {
             userNameTextView.setText(user.getName());
             TextView userEmailTextView = findViewById(R.id.userEmail);
             userEmailTextView.setText(user.getEmail());
@@ -321,9 +375,16 @@ public class HomePageActivity extends AppCompatActivity {
                     return true;
                 }
                 else if (id == R.id.nav_preferences) {
-                    // Handle preferences navigation
+                    //Handle preferences navigation
+                    //Create Shared preferences if not already set
+                    Context context = getApplicationContext();
+                    SharedPreferences preferences =
+                            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+                    boolean silent = preferences.getBoolean(SILENT_MODE, false);
+                    //Pass intent to preferences activity
                     Intent intent = new Intent(HomePageActivity.this, PreferencesActivity.class);
                     intent.putExtra("userEmail", currentUserEmail);
+                    intent.putExtra("currentSilentMode", silent);
                     startActivity(intent);
                     drawerLayout.closeDrawer(GravityCompat.START);
                     return true;
@@ -336,7 +397,6 @@ public class HomePageActivity extends AppCompatActivity {
     }
 
     private void setFilterTabs() {
-
         //Set up tabs
         TabLayout filterTabs = findViewById(R.id.filterTabs);
         filterTabs.addTab(filterTabs.newTab().setText("All"));
@@ -372,7 +432,6 @@ public class HomePageActivity extends AppCompatActivity {
     private void handleSearch(String query){
         // Create a list to store books that match the search query
         ArrayList<Book> filteredBooks = new ArrayList<>();
-
         for (Book book : this.books) {
             // Check if the book's title or author contains the search query
             if (book.getTitle().toLowerCase().contains(query.toLowerCase()) ||
@@ -380,12 +439,21 @@ public class HomePageActivity extends AppCompatActivity {
                 filteredBooks.add(book);
             }
         }
-
         // Update the adapter with the filtered list
         mAdapter.updateDataSet(filteredBooks);
+        TextView emptyTextView = findViewById(R.id.empty_list_text);
+        RecyclerView recyclerView = findViewById(R.id.recycler_view);
+        if (filteredBooks.isEmpty()) {
+            emptyTextView.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+        }
+        else {
+            emptyTextView.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+        }
     }
 
-    private void setRecyclerView(){
+    public void setRecyclerView(){
         // Set up RecyclerView
         RecyclerView mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
@@ -397,17 +465,32 @@ public class HomePageActivity extends AppCompatActivity {
         }
         DBHandler dbHandler = new DBHandler(this);
         BookDAO bookDAO = new BookDAO(dbHandler);
-        /*ArrayList<Book> mockBooks = getMockBooks();
+        /*
+        ArrayList<Book> mockBooks = getMockBooks();
         for (int i = 0; i < 20; i++){
             bookDAO.createBook(mockBooks.get(i).getTitle(), mockBooks.get(i).getAuthor(), mockBooks.get(i).getCategory(), mockBooks.get(i).getStartDate(), mockBooks.get(i).getReview(), mockBooks.get(i).getStatus(), mockBooks.get(i).getUserId());
         }*/
         this.books = bookDAO.getAllBooks(this.currentUser.getId());
-        if (this.books == null){
-            Toast.makeText(this, "Book list is empty", Toast.LENGTH_SHORT).show();
+        TextView emptyTextView = findViewById(R.id.empty_list_text);
+        if (this.books == null || this.books.isEmpty()) {
+            mRecyclerView.setVisibility(View.GONE);
+            emptyTextView.setVisibility(View.VISIBLE);
         }
-        this.mAdapter = new BookAdapter(this.books, this.currentUserEmail); // Initialize mAdapter here
+        else{
+            emptyTextView.setVisibility(View.GONE);
+            mRecyclerView.setVisibility(View.VISIBLE);
+        }
+
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
-        mRecyclerView.setAdapter(mAdapter);
+
+        if (this.mAdapter == null) {
+            this.mAdapter = new BookAdapter(this.books, this.currentUserEmail, this); // Initialize mAdapter here
+            mRecyclerView.setAdapter(mAdapter);
+        }
+        else {
+
+           this.mAdapter.updateDataSet(this.books);
+        }
     }
 
     @Override

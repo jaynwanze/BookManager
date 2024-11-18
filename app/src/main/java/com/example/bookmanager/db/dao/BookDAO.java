@@ -34,17 +34,11 @@ public class BookDAO {
                 COL_START_DATE + ", " +
                 COL_REVIEW + ", " +
                 COL_STATUS +
-                ") VALUES ('" +
-                userId + "','" +
-                title + "','" +
-                author + "','" +
-                category + "','" +
-                startDate + "','" +
-                review + "','" +
-                status + "')";
-
+                ") VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (SQLiteDatabase db = dbhandler.getWritableDatabase()) {
-            db.execSQL(sql);
+            db.execSQL(sql, new Object[]{
+                    userId, title, author, category, startDate, review, status
+            });
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -53,6 +47,7 @@ public class BookDAO {
             dbhandler.close();
         }
     }
+
 
     public ArrayList<Book> getAllBooks(int userId) {
         ArrayList<Book> books = new ArrayList<>();
@@ -107,7 +102,6 @@ public class BookDAO {
 
             if (cursor.moveToFirst()) {
                  book = new Book();
-
                 book.setId(cursor.getInt(0));
                 book.setUserId(cursor.getInt(1));
                 book.setTitle(cursor.getString(2));
@@ -128,13 +122,12 @@ public class BookDAO {
     }
 
     public boolean updateBook(int id, int userId, String review, String status) {
-        String sql = "UPDATE " + TABLE_BOOK + " SET " +
-                COL_REVIEW + " = '" + review + "', " +
-                COL_STATUS + " = '" + status + "' " +
-                "WHERE " + COL_ID + " = " + id;
-
+        String sqlUpdate = "UPDATE " + TABLE_BOOK + " SET " +
+                COL_REVIEW + " = ?, " +
+                COL_STATUS + " = ? " +
+                "WHERE " + COL_ID + " = ?";
         try (SQLiteDatabase db = dbhandler.getWritableDatabase()) {
-            db.execSQL(sql);
+            db.execSQL(sqlUpdate, new Object[]{review, status, id});
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -143,4 +136,5 @@ public class BookDAO {
             dbhandler.close();
         }
     }
+
 }

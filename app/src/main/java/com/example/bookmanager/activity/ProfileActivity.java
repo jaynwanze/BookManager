@@ -87,7 +87,18 @@ public class ProfileActivity extends AppCompatActivity
                 updateProfile();
             }
         });
+    }
 
+    public boolean validateFullName() {
+        EditText editName = findViewById(R.id.name_edit);
+        String fullName = editName.getText().toString();
+        return fullName.isEmpty() || fullName.matches("^[a-zA-Z\\s]+$");
+    }
+
+    public boolean validateDateOfBirth() {
+        EditText editDOB = findViewById(R.id.name_dob);
+        String userDOB = editDOB.getText().toString();
+        return userDOB.isEmpty() || userDOB.matches("\\d{2}/\\d{2}/\\d{4}");
     }
 
     private void updateProfile() {
@@ -95,6 +106,33 @@ public class ProfileActivity extends AppCompatActivity
         EditText editDOB = findViewById(R.id.dob_edit);
         String newName = editName.getText().toString();
         String newDOB = editDOB.getText().toString();
+
+        if (!validateFullName()) {
+            Toast.makeText(ProfileActivity.this, "Invalid Name: Must contain only letters and spaces", Toast.LENGTH_LONG).show();
+            return;
+        }
+        else if (!validateDateOfBirth()) {
+            Toast.makeText(ProfileActivity.this, "Invalid Date of Birth: Must be in the format DD/MM/YYYY", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        else if (Integer.parseInt(newDOB.substring(0,2)) > 31)
+        {
+            Toast.makeText(ProfileActivity.this, "Invalid Date of Birth: Day must be between 1 and 31", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        else if (Integer.parseInt(newDOB.substring(3,5)) > 12)
+        {
+            Toast.makeText(ProfileActivity.this, "Invalid Date of Birth: Month must be between 1 and 12", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        else if( Integer.parseInt(newDOB.substring(6,10)) > 2012)
+        {
+            Toast.makeText(ProfileActivity.this, "Invalid Date of Birth: Must be born before year 2012", Toast.LENGTH_LONG).show();
+            return;
+        }
         DBHandler dbhandler = new DBHandler(this);
         UserDAO userDAO = new UserDAO(dbhandler);
         boolean userProfileUpdated = userDAO.updateUserProfile(newName,newDOB,currentUserEmail);

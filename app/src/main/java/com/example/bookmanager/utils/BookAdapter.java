@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.bookmanager.R;
+import com.example.bookmanager.activity.HomePageActivity;
 import com.example.bookmanager.activity.UpdateBookActivity;
 import com.example.bookmanager.db.dao.BookDAO;
 import com.example.bookmanager.db.handler.DBHandler;
@@ -23,6 +24,8 @@ import java.util.ArrayList;
 public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder> {
     private ArrayList<Book> mylistvalues;
     private String currentUserEmail;
+    private HomePageActivity activity;
+
     // Provide a reference to the views for each data item
     public static class BookViewHolder extends RecyclerView.ViewHolder {
         public TextView txtView; //refer to the text view of row layout
@@ -33,18 +36,19 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
         }
     }
     //Book Adapter Constructor
-    public BookAdapter(ArrayList<Book> myDataset, String currentUserEmail ) {
+    public BookAdapter(ArrayList<Book> myDataset, String currentUserEmail, HomePageActivity activity) {
         this.mylistvalues = myDataset;
         this.currentUserEmail = currentUserEmail;
+        this.activity = activity;
     }
     // Create new views (invoked by the layout manager)
     @NonNull
     @Override
     public BookAdapter.BookViewHolder onCreateViewHolder(ViewGroup parent,
                                                           int viewType) {
-// create a new view
+        // create a new view
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View itemView = inflater.inflate(R.layout.row_layout, parent, false); //false: inflate the row
+        View itemView = inflater.inflate(R.layout.row_layout, parent, false);
 
         BookViewHolder viewHolder = new BookViewHolder(itemView);
         return viewHolder;
@@ -54,7 +58,11 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
         Book book = mylistvalues.get(position);
         holder.txtView.setText(book.toString());
         holder.txtView.setOnClickListener(v -> {
-            Book clickedBook = mylistvalues.get(position);
+            // Always get the current position dynamically
+            int currentPosition = holder.getAdapterPosition();
+            if (currentPosition == RecyclerView.NO_POSITION) return;
+
+            Book clickedBook = mylistvalues.get(currentPosition);
 
             AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
             builder.setTitle(clickedBook.getTitle() + " by: " + clickedBook.getAuthor());
@@ -68,16 +76,19 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
                 intent.putExtra("userEmail", currentUserEmail);
                 intent.putExtra("bookId", String.valueOf(clickedBook.getId()));
                 v.getContext().startActivity(intent);
+                activity.setRecyclerView();
             });
 
             builder.setNegativeButton("Remove", (dialog, which) -> {
-                if (position >= 0 && position < mylistvalues.size()) {
+                if (currentPosition >= 0 && currentPosition < mylistvalues.size()) {
                     DBHandler dbHandler = new DBHandler(v.getContext());
                     BookDAO bookDAO = new BookDAO(dbHandler);
                     boolean bookRemoved = bookDAO.removeBook(clickedBook.getId());
+
                     if (bookRemoved) {
-                        remove(position);
+                        remove(currentPosition);
                         Toast.makeText(v.getContext(), "Book removed", Toast.LENGTH_SHORT).show();
+                        activity.setRecyclerView();
                     } else {
                         Toast.makeText(v.getContext(), "Book not removed", Toast.LENGTH_SHORT).show();
                     }
@@ -86,6 +97,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
             builder.show();
         });
     }
+
 
 
 

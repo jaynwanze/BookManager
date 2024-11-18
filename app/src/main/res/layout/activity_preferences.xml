@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/activity_preferences"
+    tools:context=".activity.PreferencesActivity">
+
+    <TextView
+        android:id="@+id/preferences_label"
+        android:layout_width="413dp"
+        android:layout_height="64dp"
+        android:background="@color/light_black"
+        android:gravity="center"
+        android:text="@string/preferences"
+        android:textColor="@color/light_grey"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/silent_mode_label"
+        android:layout_width="129dp"
+        android:layout_height="51dp"
+        android:layout_marginTop="120dp"
+        android:gravity="center"
+        android:text="@string/silent_mode"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toStartOf="@+id/silent_mode_switch"
+        app:layout_constraintHorizontal_bias="0.505"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/preferences_label" />
+
+    <TextView
+        android:id="@+id/silent_mode_description"
+        android:layout_width="129dp"
+        android:layout_height="32dp"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text=""
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toStartOf="@+id/silent_mode_switch"
+        app:layout_constraintHorizontal_bias="0.505"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/silent_mode_label" />
+
+    <Switch
+        android:id="@+id/silent_mode_switch"
+        android:layout_width="99dp"
+        android:layout_height="52dp"
+        android:layout_marginTop="120dp"
+        android:layout_marginEnd="88dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/preferences_label" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

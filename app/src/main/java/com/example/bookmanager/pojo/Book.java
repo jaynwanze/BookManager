@@ -102,9 +102,9 @@ public class Book
     {
         return
                         " Title: " + this.title +
-                        " Author: " + this.author +
-                        " Category: " + this.category +
-                        " Start Date: " + this.startDate +
-                        " Status: " + this.status;
+                        " \nAuthor: " + this.author +
+                        " \nCategory: " + this.category +
+                        " \nStart Date: " + this.startDate +
+                        " \nStatus: " + this.status;
     }
 }

@@ -19,18 +19,24 @@ public class UserDAO {
         this.dbhandler = dbhandler;
     }
 
-    public boolean createUser(String email , String password , String name , String dob)  {
-        String sqlInsertStatement = "INSERT INTO " + TABLE_USER + " (" + COL_EMAIL + ", " + COL_PASSWORD + ", " + COL_NAME + ", " + COL_DOB + ") VALUES ('" + email.toLowerCase() + "','" + password + "','" + name + "','" + dob + "')";
+    public boolean createUser(String email, String password, String name, String dob) {
+        String sqlInsertStatement = "INSERT INTO " + TABLE_USER + " (" +
+                COL_EMAIL + ", " +
+                COL_PASSWORD + ", " +
+                COL_NAME + ", " +
+                COL_DOB +
+                ") VALUES (?, ?, ?, ?)";
         try (SQLiteDatabase db = dbhandler.getWritableDatabase()) {
-            db.execSQL(sqlInsertStatement);
+            db.execSQL(sqlInsertStatement, new Object[]{email.toLowerCase(), password, name, dob});
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
-        }
-        finally {
+        } finally {
             dbhandler.close();
         }
     }
+
 
     public boolean signInUser(String userEmail , String userPassword)   {
         SQLiteDatabase db = dbhandler.getReadableDatabase();
@@ -76,17 +82,20 @@ public class UserDAO {
 
     }
 
-    public boolean updateUserProfile(String name , String dob , String userEmail) {
-        SQLiteDatabase db = dbhandler.getWritableDatabase();
-        String sqlUpdate = "UPDATE " + TABLE_USER + " SET " + COL_NAME + " = '" + name + "', " + COL_DOB + " = '" + dob + "' WHERE " + COL_EMAIL + " = '" + userEmail + "'";
-        try {
-            db.execSQL(sqlUpdate);
+    public boolean updateUserProfile(String name, String dob, String userEmail) {
+        String sqlUpdate = "UPDATE " + TABLE_USER + " SET " +
+                COL_NAME + " = ?, " +
+                COL_DOB + " = ? " +
+                "WHERE " + COL_EMAIL + " = ?";
+        try (SQLiteDatabase db = dbhandler.getWritableDatabase()) {
+            db.execSQL(sqlUpdate, new Object[]{name, dob, userEmail});
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
-        }
-        finally {
+        } finally {
             dbhandler.close();
         }
     }
+
 }

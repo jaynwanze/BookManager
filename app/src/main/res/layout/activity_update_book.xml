@@ -9,10 +9,9 @@
 
     <TextView
         android:id="@+id/update_book_label"
-        android:layout_width="212dp"
-        android:layout_height="61dp"
-        android:layout_marginTop="24dp"
-        android:background="@color/black"
+        android:layout_width="413dp"
+        android:layout_height="64dp"
+        android:background="@color/light_black"
         android:gravity="center"
         android:text="Update Book"
         android:textColor="@color/light_grey"

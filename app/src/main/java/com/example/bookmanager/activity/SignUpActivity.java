@@ -9,7 +9,6 @@ import android.widget.*;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -18,7 +17,6 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.bookmanager.R;
 import com.example.bookmanager.db.dao.UserDAO;
 import com.example.bookmanager.db.handler.DBHandler;
-import com.example.bookmanager.pojo.Book;
 import com.example.bookmanager.textchange.TextChangeHandler;
 import com.google.android.material.tabs.TabLayout;
 
@@ -120,6 +118,19 @@ public class SignUpActivity extends AppCompatActivity {
         return email.contains("@") && !email.contains(" ");
     }
 
+    public boolean validateFullName() {
+        EditText editName = findViewById(R.id.name_edit);
+        String fullName = editName.getText().toString();
+       return fullName.isEmpty() || fullName.matches("^[a-zA-Z\\s]+$");
+    }
+
+    public boolean validateDateOfBirth() {
+        EditText editDOB = findViewById(R.id.name_dob);
+        String userDOB = editDOB.getText().toString();
+
+        return userDOB.isEmpty() || userDOB.matches("\\d{2}/\\d{2}/\\d{4}");
+    }
+
     //sign up user
     private void signUp() {
         if (!validateEmail()) {
@@ -128,7 +139,36 @@ public class SignUpActivity extends AppCompatActivity {
         }
 
         else if (!validatePassword()) {
-            Toast.makeText(SignUpActivity.this, "Invalid Password: Must be at least 6 characters, have no spaces and contain at least 1 digits", Toast.LENGTH_LONG).show();
+            Toast.makeText(SignUpActivity.this, "Invalid Password: Must be at least 6 characters, have no spaces and contain at least 1 digit", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        else if (!validateFullName()) {
+            Toast.makeText(SignUpActivity.this, "Invalid Name: Must contain only letters and spaces", Toast.LENGTH_LONG).show();
+            return;
+        }
+        else if (!validateDateOfBirth()) {
+            Toast.makeText(SignUpActivity.this, "Invalid Date of Birth: Must be in the format DD/MM/YYYY", Toast.LENGTH_LONG).show();
+            return;
+        }
+        EditText editDOB = findViewById(R.id.name_dob);
+        String userDOB = editDOB.getText().toString();
+
+        if (Integer.parseInt(userDOB.substring(0,2)) > 31)
+             {
+             Toast.makeText(SignUpActivity.this, "Invalid Date of Birth: Day must be between 1 and 31", Toast.LENGTH_LONG).show();
+             return;
+         }
+
+        else if (Integer.parseInt(userDOB.substring(3,5)) > 12)
+        {
+            Toast.makeText(SignUpActivity.this, "Invalid Date of Birth: Month must be between 1 and 12", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        else if( Integer.parseInt(userDOB.substring(6,10)) > 2012)
+        {
+            Toast.makeText(SignUpActivity.this, "Invalid Date of Birth: Must be born before year 2012", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -136,9 +176,9 @@ public class SignUpActivity extends AppCompatActivity {
         String userEmail = editEmail.getText().toString();
         EditText editPassword = findViewById(R.id.password_toggle);
         EditText editName = findViewById(R.id.name_edit);
-        EditText editDOB = findViewById(R.id.name_dob);
+        editDOB = findViewById(R.id.name_dob);
         String fullName = editName.getText().toString();
-        String userDOB = editDOB.getText().toString();
+        userDOB = editDOB.getText().toString();
         String userPassword = editPassword.getText().toString();
         UserDAO userDAO = new UserDAO(dbhandler);
         //check if user already exists

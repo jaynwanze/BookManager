@@ -60,16 +60,7 @@
         app:tabIndicatorColor="@color/dark_grey"
         app:tabMode="fixed" />
 
-    <TextView
-        android:id="@+id/filter_display_text"
-        android:layout_width="276dp"
-        android:layout_height="58dp"
-        android:layout_marginTop="20dp"
-        android:gravity="center"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.496"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/search_view" />
+
 
     <androidx.appcompat.widget.SearchView
         android:id="@+id/search_view"
@@ -82,6 +73,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/filterTabs" />
 
+    <TextView
+        android:id="@+id/filter_display_text"
+        android:layout_width="276dp"
+        android:layout_height="58dp"
+        android:layout_marginTop="20dp"
+        android:background="@color/lighter_grey"
+        android:gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/search_view" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="369dp"
@@ -91,6 +94,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/filter_display_text"
         app:layout_constraintVertical_bias="0.344" />
+
+    <TextView
+        android:id="@+id/empty_list_text"
+        android:layout_width="276dp"
+        android:layout_height="58dp"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:visibility="invisible"
+        android:text="@string/books_not_found"
+        android:textColor="@color/red"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/filter_display_text"/>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

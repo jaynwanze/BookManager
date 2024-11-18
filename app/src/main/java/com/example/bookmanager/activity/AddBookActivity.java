@@ -20,10 +20,9 @@ import com.example.bookmanager.R;
 import com.example.bookmanager.db.dao.BookDAO;
 import com.example.bookmanager.db.dao.UserDAO;
 import com.example.bookmanager.db.handler.DBHandler;
-import com.example.bookmanager.pojo.Book;
 import com.example.bookmanager.pojo.User;
 
-import java.util.ArrayList;
+import java.time.LocalDate;
 
 public class AddBookActivity extends AppCompatActivity {
     private DBHandler dbhandler;
@@ -88,6 +87,21 @@ public class AddBookActivity extends AppCompatActivity {
         });
 
     }
+
+    public boolean validateAuthor() {
+        EditText authorEdit = findViewById(R.id.author_edit);
+        String author = authorEdit.getText().toString();
+
+        return author.isEmpty() || author.matches("^[a-zA-Z\\s]+$");
+    }
+
+    public boolean validateStartDate() {
+        EditText editStartDate = findViewById(R.id.start_date_edit);
+        String startDate = editStartDate.getText().toString();
+
+        return startDate.isEmpty() || startDate.matches("\\d{2}/\\d{2}/\\d{4}");
+    }
+
     private void addBook() {
         EditText titleEdit = findViewById(R.id.edit_title);
         EditText authorEdit = findViewById(R.id.author_edit);
@@ -102,6 +116,36 @@ public class AddBookActivity extends AppCompatActivity {
         String startDate = startDateEdit.getText().toString();
         String review = reviewEdit.getText().toString();
         String status = status_dropdown.getSelectedItem().toString();
+
+
+         if (!validateAuthor()) {
+            Toast.makeText(this, "Invalid Author: Must contain only letters and spaces", Toast.LENGTH_LONG).show();
+            return;
+        }
+        else if (!validateStartDate()) {
+            Toast.makeText(this, "Invalid Start Date: Must be in the format DD/MM/YYYY", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+
+        if (Integer.parseInt(startDate.substring(0,2)) > 31)
+        {
+            Toast.makeText(AddBookActivity.this, "Invalid Start Date: Day must be between 1 and 31", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        else if (Integer.parseInt(startDate.substring(3,5)) > 12)
+        {
+            Toast.makeText(AddBookActivity.this, "Invalid Start Date: Month must be between 1 and 12", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        else if( Integer.parseInt(startDate.substring(6,10)) > LocalDate.now().getYear())
+        {
+            Toast.makeText(AddBookActivity.this, "Invalid Start Date: Year must be in the past", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         BookDAO bookDAO = new BookDAO(dbhandler);
         boolean bookAdded = false;
         if (review.isEmpty() | review.isBlank()){
@@ -110,6 +154,10 @@ public class AddBookActivity extends AppCompatActivity {
         bookAdded  = bookDAO.createBook(title,author, category,startDate,review,status,currentUser.getId());
         if (bookAdded){
             Toast.makeText(this, "Book added successfully", Toast.LENGTH_SHORT).show();
+            titleEdit.setText("");
+            authorEdit.setText("");
+            startDateEdit.setText("");
+            reviewEdit.setText("");
         }
         else {
             Toast.makeText(this, "Error adding book", Toast.LENGTH_SHORT).show();

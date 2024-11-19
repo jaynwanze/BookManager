@@ -3,6 +3,7 @@ package com.example.bookmanager.db.handler;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 public class DBHandler extends SQLiteOpenHelper {
     // define constants related to DB schema such as DB name
@@ -57,5 +58,18 @@ public class DBHandler extends SQLiteOpenHelper {
                            int oldVersion, int newVersion ) {
 // Drop old table if it exists and create new tables,
 //or alter table
+    }
+
+    @Override
+    public SQLiteDatabase getWritableDatabase() {
+        SQLiteDatabase db = super.getWritableDatabase();
+        Log.d("DBHandler", "Database opened for writing");
+        return db;
+    }
+
+    @Override
+    public synchronized void close() {
+        super.close();
+        Log.d("DBHandler", "Database closed");
     }
 }

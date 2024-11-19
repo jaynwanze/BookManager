@@ -34,6 +34,7 @@ import com.example.bookmanager.R;
 import com.example.bookmanager.db.dao.UserDAO;
 import com.example.bookmanager.db.dao.BookDAO;
 import com.example.bookmanager.db.handler.DBHandler;
+import com.example.bookmanager.db.handler.DBHandlerSingleton;
 import com.example.bookmanager.pojo.Book;
 import com.example.bookmanager.pojo.User;
 import com.example.bookmanager.utils.BookAdapter;
@@ -53,7 +54,7 @@ public class HomePageActivity extends AppCompatActivity {
     private User currentUser;
     final String PREFS_NAME = "Preferences";
     final String SILENT_MODE = "silent_mode";
-
+    private DBHandler dbHandler;
 
 
     public static ArrayList<Book> getMockBooks() {
@@ -98,18 +99,22 @@ public class HomePageActivity extends AppCompatActivity {
             return insets;
         });
         this.currentUser = null;
-        DBHandler dbHandler;
+
         Intent intent = getIntent();
         this.currentUserEmail = intent.getStringExtra("userEmail");
-        try{ dbHandler = new DBHandler(this);
-            UserDAO userDAO = new UserDAO(dbHandler);
+        dbHandler = DBHandlerSingleton.getInstance(this);
+        UserDAO userDAO = UserDAO.getInstance(dbHandler);
+
             this.currentUser = userDAO.getUserLoggedIn(this.currentUserEmail);
-            dbHandler.close();
-            Toast.makeText(HomePageActivity.this, "Welcome " + this.currentUser .getName(), Toast.LENGTH_LONG).show();
-        }
-        catch (Exception e){
-            Toast.makeText(HomePageActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
+            if (!isReturningFromAnotherActivity) {
+                if (this.currentUser != null) {
+                    Toast.makeText(HomePageActivity.this, "Welcome " + this.currentUser.getName(), Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(HomePageActivity.this, "User not found", Toast.LENGTH_LONG).show();
+                    this.finish();
+                }
+            }
+
         setHeaderView();// set header view
         setFilterTabs();// set filter tabs
         setRecyclerView();// set recycler view
@@ -138,7 +143,10 @@ public class HomePageActivity extends AppCompatActivity {
         // Set phone to silent mode if enabled
         if (silentModeEnabled) {
             AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            audioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
+            if (audioManager != null) {
+                audioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
+            }
+
         }
     }
 
@@ -309,17 +317,10 @@ public class HomePageActivity extends AppCompatActivity {
     private void setHeaderView() {
         //get user email from intent
         User user = null;
-        DBHandler dbHandler;
         Intent intent = getIntent();
         this.currentUserEmail = intent.getStringExtra("userEmail");
-        try{ dbHandler = new DBHandler(this);
-            UserDAO userDAO = new UserDAO(dbHandler);
-            user = userDAO.getUserLoggedIn(this.currentUserEmail);
-            dbHandler.close();
-        }
-        catch (Exception e){
-            Toast.makeText(HomePageActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
+        UserDAO userDAO = UserDAO.getInstance(this.dbHandler);
+        user = userDAO.getUserLoggedIn(this.currentUserEmail);
 
         TextView userNameTextView = findViewById(R.id.userName);
         if (user != null|| user.getName().isEmpty()) {
@@ -463,10 +464,9 @@ public class HomePageActivity extends AppCompatActivity {
         if (this.books == null) {
             this.books = new ArrayList<>();
         }
-        DBHandler dbHandler = new DBHandler(this);
-        BookDAO bookDAO = new BookDAO(dbHandler);
-        /*
-        ArrayList<Book> mockBooks = getMockBooks();
+        BookDAO bookDAO = BookDAO.getInstance(this.dbHandler);
+
+        /*ArrayList<Book> mockBooks = getMockBooks();
         for (int i = 0; i < 20; i++){
             bookDAO.createBook(mockBooks.get(i).getTitle(), mockBooks.get(i).getAuthor(), mockBooks.get(i).getCategory(), mockBooks.get(i).getStartDate(), mockBooks.get(i).getReview(), mockBooks.get(i).getStatus(), mockBooks.get(i).getUserId());
         }*/
@@ -494,16 +494,14 @@ public class HomePageActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-    @Override
     protected void onRestart() {
         super.onRestart();
         if (isReturningFromAnotherActivity) {
             //refresh view
             setHeaderView();
             setRecyclerView();
+            SearchView searchView = findViewById(R.id.search_view);
+            handleSearch(searchView.getQuery().toString());
             isReturningFromAnotherActivity = false;
         }
     }
@@ -514,12 +512,10 @@ public class HomePageActivity extends AppCompatActivity {
         isReturningFromAnotherActivity = true;
     }
 
-
     //go back to sign up activity
     private void logout() {
         Intent intent = new Intent(this, SignUpActivity.class);
         startActivity(intent);
         this.finish();
     }
-
 }

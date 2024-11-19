@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Switch;
 import android.widget.Toast;
 
@@ -17,8 +16,7 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.bookmanager.R;
 
-public class PreferencesActivity extends AppCompatActivity
-{
+public class PreferencesActivity extends AppCompatActivity {
     final String PREFS_NAME = "Preferences"; // Change to "Preferences"
     final String SILENT_MODE = "silent_mode";
 
@@ -51,7 +49,7 @@ public class PreferencesActivity extends AppCompatActivity
         this.finish();
     }
 
-    public void updatePref(boolean silent){
+    public void updatePref(boolean silent) {
         Context context = getApplicationContext();
         SharedPreferences preferences =
                 context.getSharedPreferences(PREFS_NAME, 0);
@@ -62,12 +60,14 @@ public class PreferencesActivity extends AppCompatActivity
         // Set phone to silent mode if enabled
         if (silent) {
             AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            audioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
+
+            if (audioManager != null) {
+                audioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
+            }
+            Toast.makeText(this, "Silent Mode " + (silent ? "Enabled" : "Disabled"),
+                    Toast.LENGTH_LONG).show();
+
         }
-
-        Toast.makeText(this, "Silent Mode " + (silent ? "Enabled" : "Disabled") ,
-                Toast.LENGTH_LONG).show();
-
     }
 }
 

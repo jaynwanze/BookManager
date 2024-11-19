@@ -17,6 +17,7 @@ import com.example.bookmanager.activity.HomePageActivity;
 import com.example.bookmanager.activity.UpdateBookActivity;
 import com.example.bookmanager.db.dao.BookDAO;
 import com.example.bookmanager.db.handler.DBHandler;
+import com.example.bookmanager.db.handler.DBHandlerSingleton;
 import com.example.bookmanager.pojo.Book;
 
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
     private ArrayList<Book> mylistvalues;
     private String currentUserEmail;
     private HomePageActivity activity;
+    private DBHandler dbHandler;
 
     // Provide a reference to the views for each data item
     public static class BookViewHolder extends RecyclerView.ViewHolder {
@@ -81,8 +83,8 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
 
             builder.setNegativeButton("Remove", (dialog, which) -> {
                 if (currentPosition >= 0 && currentPosition < mylistvalues.size()) {
-                    DBHandler dbHandler = new DBHandler(v.getContext());
-                    BookDAO bookDAO = new BookDAO(dbHandler);
+                     dbHandler = DBHandlerSingleton.getInstance(v.getContext());
+                    BookDAO bookDAO = BookDAO.getInstance(this.dbHandler);
                     boolean bookRemoved = bookDAO.removeBook(clickedBook.getId());
 
                     if (bookRemoved) {

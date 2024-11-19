@@ -19,10 +19,12 @@ import com.example.bookmanager.R;
 import com.example.bookmanager.db.dao.BookDAO;
 import com.example.bookmanager.db.dao.UserDAO;
 import com.example.bookmanager.db.handler.DBHandler;
+import com.example.bookmanager.db.handler.DBHandlerSingleton;
 import com.example.bookmanager.pojo.Book;
 import com.example.bookmanager.pojo.User;
 
 public class UpdateBookActivity extends AppCompatActivity {
+    private DBHandler dbHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +37,7 @@ public class UpdateBookActivity extends AppCompatActivity {
             return insets;
         });
 
-        DBHandler dbhandler = new DBHandler(this);
+        dbHandler = DBHandlerSingleton.getInstance(this);
 
         // Retrieve Intent extras
         String currentUserEmail = getIntent().getStringExtra("userEmail");
@@ -47,8 +49,8 @@ public class UpdateBookActivity extends AppCompatActivity {
             return;
         }
 
-        BookDAO bookDAO = new BookDAO(dbhandler);
-        UserDAO userDAO = new UserDAO(dbhandler);
+        BookDAO bookDAO = BookDAO.getInstance(this.dbHandler);
+        UserDAO userDAO = UserDAO.getInstance(this.dbHandler);
         User user = userDAO.getUserLoggedIn(currentUserEmail);
         Book book = bookDAO.getBook(Integer.parseInt(bookId));
 
@@ -80,10 +82,6 @@ public class UpdateBookActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
 
     @Override
     protected void onPause() {
@@ -101,8 +99,7 @@ public class UpdateBookActivity extends AppCompatActivity {
         String review = reviewEdit.getText().toString();
         Spinner spinner = findViewById(R.id.status_dropdown);
         String status = spinner.getSelectedItem().toString();
-        DBHandler dbhandler = new DBHandler(this);
-        BookDAO bookDAO = new BookDAO(dbhandler);
+        BookDAO bookDAO = BookDAO.getInstance(this.dbHandler);
         boolean bookUpdated = bookDAO.updateBook(Integer.parseInt(bookId) ,userId, review, status);
         if (bookUpdated){
             Toast.makeText(this, "Book updated successfully", Toast.LENGTH_SHORT).show();

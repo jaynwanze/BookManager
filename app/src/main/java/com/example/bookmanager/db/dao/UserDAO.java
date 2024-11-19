@@ -1,5 +1,6 @@
 package com.example.bookmanager.db.dao;
 
+
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -7,7 +8,8 @@ import com.example.bookmanager.db.handler.DBHandler;
 import com.example.bookmanager.pojo.User;
 
 public class UserDAO {
-    private final DBHandler dbhandler;
+    private static UserDAO instance;
+    private final DBHandler dbHandler;
     public static final String TABLE_USER="User";
     public static final String COL_EMAIL="Email";
     public static final String COL_PASSWORD="Password";
@@ -15,55 +17,57 @@ public class UserDAO {
     public static final String COL_NAME="Name";
 
 
-    public UserDAO (DBHandler dbhandler) {
-        this.dbhandler = dbhandler;
+    private UserDAO(DBHandler dbHandler) {
+        this.dbHandler = dbHandler;
     }
 
+    public static synchronized UserDAO getInstance(DBHandler dbHandler) {
+        if (instance == null) {
+            instance = new UserDAO(dbHandler);
+        }
+        return instance;
+    }
     public boolean createUser(String email, String password, String name, String dob) {
+        SQLiteDatabase db = dbHandler.getWritableDatabase();
         String sqlInsertStatement = "INSERT INTO " + TABLE_USER + " (" +
                 COL_EMAIL + ", " +
                 COL_PASSWORD + ", " +
                 COL_NAME + ", " +
                 COL_DOB +
                 ") VALUES (?, ?, ?, ?)";
-        try (SQLiteDatabase db = dbhandler.getWritableDatabase()) {
+        try {
             db.execSQL(sqlInsertStatement, new Object[]{email.toLowerCase(), password, name, dob});
             return true;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
-        } finally {
-            dbhandler.close();
         }
     }
 
 
     public boolean signInUser(String userEmail , String userPassword)   {
-        SQLiteDatabase db = dbhandler.getReadableDatabase();
+        SQLiteDatabase db = dbHandler.getReadableDatabase();
         String sqlSelect = "SELECT * FROM " + TABLE_USER + " WHERE " + COL_EMAIL + " = '" + userEmail + "' AND " + COL_PASSWORD + " = '" + userPassword + "'";
         //using rawQuery when return a cursor
         Cursor cursor = db.rawQuery(sqlSelect,null);
         if (cursor.moveToFirst()) return cursor.getString(1).equalsIgnoreCase(userEmail) && cursor.getString(2).equals(userPassword);
-        dbhandler.close();
         return false;
 
 
     }
 
     public boolean checkIfUserExists (String userEmail){
-        SQLiteDatabase db = dbhandler.getReadableDatabase();
+        SQLiteDatabase db = dbHandler.getReadableDatabase();
         String sqlSelect = "SELECT * FROM " + TABLE_USER + " WHERE " + COL_EMAIL + " = '" + userEmail + "'";
         //using rawQuery when return a cursor
         Cursor cursor = db.rawQuery(sqlSelect,null);
         if (cursor.moveToFirst()) return cursor.getString(1).equalsIgnoreCase(userEmail);
-
-        dbhandler.close();
         return false;
 
     }
 
     public User getUserLoggedIn(String userEmail){
-        SQLiteDatabase db = dbhandler.getReadableDatabase();
+        SQLiteDatabase db = dbHandler.getReadableDatabase();
         String sqlSelect = "SELECT * FROM " + TABLE_USER + " WHERE " + COL_EMAIL + " = '" + userEmail + "'";
         //using rawQuery when return a cursor
         Cursor cursor = db.rawQuery(sqlSelect,null);
@@ -76,25 +80,21 @@ public class UserDAO {
                 user.setDob(cursor.getString(4));
                 return user;
             }
-        dbhandler.close();
-
         return null;
-
     }
 
     public boolean updateUserProfile(String name, String dob, String userEmail) {
+        SQLiteDatabase db = dbHandler.getWritableDatabase();
         String sqlUpdate = "UPDATE " + TABLE_USER + " SET " +
                 COL_NAME + " = ?, " +
                 COL_DOB + " = ? " +
                 "WHERE " + COL_EMAIL + " = ?";
-        try (SQLiteDatabase db = dbhandler.getWritableDatabase()) {
+        try  {
             db.execSQL(sqlUpdate, new Object[]{name, dob, userEmail});
             return true;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
-        } finally {
-            dbhandler.close();
         }
     }
 

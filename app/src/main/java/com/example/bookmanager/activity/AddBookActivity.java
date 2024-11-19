@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
+import java.time.format.DateTimeFormatter;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
@@ -20,9 +21,11 @@ import com.example.bookmanager.R;
 import com.example.bookmanager.db.dao.BookDAO;
 import com.example.bookmanager.db.dao.UserDAO;
 import com.example.bookmanager.db.handler.DBHandler;
+import com.example.bookmanager.db.handler.DBHandlerSingleton;
 import com.example.bookmanager.pojo.User;
 
 import java.time.LocalDate;
+import java.util.Locale;
 
 public class AddBookActivity extends AppCompatActivity {
     private DBHandler dbhandler;
@@ -43,12 +46,11 @@ public class AddBookActivity extends AppCompatActivity {
 
 
         //Create database handler
-        dbhandler = new DBHandler(this);
-        dbhandler.getWritableDatabase();
+        this.dbhandler = DBHandlerSingleton.getInstance(this);
         //get user email from intent
         Intent intent = getIntent();
         this.currentUserEmail = intent.getStringExtra("userEmail");
-        UserDAO userDAO = new UserDAO(dbhandler);
+        UserDAO userDAO = UserDAO.getInstance(dbhandler);
         currentUser = userDAO.getUserLoggedIn(currentUserEmail);
 
         //add text change listener to password field
@@ -92,14 +94,14 @@ public class AddBookActivity extends AppCompatActivity {
         EditText authorEdit = findViewById(R.id.author_edit);
         String author = authorEdit.getText().toString();
 
-        return author.isEmpty() || author.matches("^[a-zA-Z\\s]+$");
+        return !author.isEmpty() || author.matches("^[a-zA-Z\\s]+$");
     }
 
     public boolean validateStartDate() {
         EditText editStartDate = findViewById(R.id.start_date_edit);
         String startDate = editStartDate.getText().toString();
 
-        return startDate.isEmpty() || startDate.matches("\\d{2}/\\d{2}/\\d{4}");
+        return !startDate.isEmpty() || startDate.matches("\\d{2}/\\d{2}/\\d{4}");
     }
 
     private void addBook() {
@@ -139,14 +141,17 @@ public class AddBookActivity extends AppCompatActivity {
             Toast.makeText(AddBookActivity.this, "Invalid Start Date: Month must be between 1 and 12", Toast.LENGTH_LONG).show();
             return;
         }
+        // Validate against current date also
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.getDefault());
+        LocalDate enteredDate = LocalDate.parse(startDate, formatter);
+        LocalDate currentDate = LocalDate.now();
 
-        else if( Integer.parseInt(startDate.substring(6,10)) > LocalDate.now().getYear())
-        {
-            Toast.makeText(AddBookActivity.this, "Invalid Start Date: Year must be in the past", Toast.LENGTH_LONG).show();
+        if (enteredDate.isAfter(currentDate)) {
+            Toast.makeText(AddBookActivity.this, "Invalid Start Date: Cannot be in the future", Toast.LENGTH_LONG).show();
             return;
         }
 
-        BookDAO bookDAO = new BookDAO(dbhandler);
+        BookDAO bookDAO = BookDAO.getInstance(this.dbhandler);
         boolean bookAdded = false;
         if (review.isEmpty() | review.isBlank()){
             review = "";
@@ -163,11 +168,5 @@ public class AddBookActivity extends AppCompatActivity {
             Toast.makeText(this, "Error adding book", Toast.LENGTH_SHORT).show();
         }
     }
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        dbhandler.close();
-    }
-
 
 }

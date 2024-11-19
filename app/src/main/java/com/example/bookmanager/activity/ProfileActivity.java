@@ -18,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.bookmanager.R;
 import com.example.bookmanager.db.dao.UserDAO;
 import com.example.bookmanager.db.handler.DBHandler;
+import com.example.bookmanager.db.handler.DBHandlerSingleton;
 import com.example.bookmanager.pojo.User;
 import com.example.bookmanager.textchange.TextChangeHandler;
 import com.google.android.material.tabs.TabLayout;
@@ -26,8 +27,7 @@ import com.google.android.material.tabs.TabLayout;
 public class ProfileActivity extends AppCompatActivity
 {
     private String currentUserEmail;
-
-
+    private DBHandler dbHandler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,11 +38,9 @@ public class ProfileActivity extends AppCompatActivity
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        DBHandler dbhandler;
-        dbhandler = new DBHandler(this);
-        dbhandler.getWritableDatabase();
+        dbHandler = DBHandlerSingleton.getInstance(this);
         currentUserEmail = getIntent().getStringExtra("userEmail");
-        UserDAO userDAO = new UserDAO(dbhandler);
+        UserDAO userDAO = UserDAO.getInstance(this.dbHandler);
         User user = userDAO.getUserLoggedIn(currentUserEmail);
 
         //Set up tabs
@@ -76,8 +74,6 @@ public class ProfileActivity extends AppCompatActivity
             }
         });
 
-        //add text change listener to password field
-        //TextChangeHandler tch = new TextChangeHandler(this);
 
         Button updateProfileButton = findViewById(R.id.update_profile);
         updateProfileButton.setOnClickListener(new View.OnClickListener() {
@@ -90,15 +86,15 @@ public class ProfileActivity extends AppCompatActivity
     }
 
     public boolean validateFullName() {
-        EditText editName = findViewById(R.id.name_edit);
+        EditText editName = findViewById(R.id.edit_name);
         String fullName = editName.getText().toString();
-        return fullName.isEmpty() || fullName.matches("^[a-zA-Z\\s]+$");
+        return !fullName.isEmpty() || fullName.matches("^[a-zA-Z\\s]+$");
     }
 
     public boolean validateDateOfBirth() {
-        EditText editDOB = findViewById(R.id.name_dob);
+        EditText editDOB = findViewById(R.id.dob_edit);
         String userDOB = editDOB.getText().toString();
-        return userDOB.isEmpty() || userDOB.matches("\\d{2}/\\d{2}/\\d{4}");
+        return !userDOB.isEmpty() || userDOB.matches("\\d{2}/\\d{2}/\\d{4}");
     }
 
     private void updateProfile() {
@@ -133,8 +129,7 @@ public class ProfileActivity extends AppCompatActivity
             Toast.makeText(ProfileActivity.this, "Invalid Date of Birth: Must be born before year 2012", Toast.LENGTH_LONG).show();
             return;
         }
-        DBHandler dbhandler = new DBHandler(this);
-        UserDAO userDAO = new UserDAO(dbhandler);
+        UserDAO userDAO = UserDAO.getInstance(this.dbHandler);
         boolean userProfileUpdated = userDAO.updateUserProfile(newName,newDOB,currentUserEmail);
         User user = userDAO.getUserLoggedIn(currentUserEmail);
         if (userProfileUpdated){
@@ -158,7 +153,6 @@ public class ProfileActivity extends AppCompatActivity
         EditText editName = findViewById(R.id.edit_name);
         EditText editDOB = findViewById(R.id.dob_edit);
         //Initial display text
-
         switch (tabPosition) {
             case 0: //view profile
                 editName.setVisibility(View.INVISIBLE);
@@ -168,7 +162,6 @@ public class ProfileActivity extends AppCompatActivity
                 nameView.setVisibility(View.VISIBLE);
                 dobView.setVisibility(View.VISIBLE);
                 updateProfileButton.setVisibility(View.INVISIBLE);
-
                 break;
             case 1: // update profile
                 nameView.setVisibility(View.INVISIBLE);
@@ -183,10 +176,6 @@ public class ProfileActivity extends AppCompatActivity
     }
 
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
 
     @Override
     public void onBackPressed() {

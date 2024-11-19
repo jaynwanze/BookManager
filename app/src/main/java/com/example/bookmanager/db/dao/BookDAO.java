@@ -10,7 +10,6 @@ import com.example.bookmanager.pojo.Book;
 import java.util.ArrayList;
 
 public class BookDAO {
-    private final DBHandler dbhandler;
     public static final String TABLE_BOOK = "Book";
     public static final String COL_ID = "ID";
     public static final String COL_USER_ID = "UserID";
@@ -20,12 +19,24 @@ public class BookDAO {
     public static final String COL_START_DATE = "StartDate";
     public static final String COL_REVIEW = "Review";
     public static final String COL_STATUS = "Status";
+    private static BookDAO instance;
+    private final DBHandler dbHandler;
 
-    public BookDAO(DBHandler dbhandler) {
-        this.dbhandler = dbhandler;
+    // Private constructor
+    private BookDAO(DBHandler dbHandler) {
+        this.dbHandler = dbHandler;
+    }
+
+    // Singleton getInstance method
+    public static synchronized BookDAO getInstance(DBHandler dbHandler) {
+        if (instance == null) {
+            instance = new BookDAO(dbHandler);
+        }
+        return instance;
     }
 
     public boolean createBook(String title, String author, String category, String startDate, String review, String status, int userId) {
+        SQLiteDatabase db = dbHandler.getWritableDatabase();
         String sql = "INSERT INTO " + TABLE_BOOK + " (" +
                 COL_USER_ID + ", " +
                 COL_TITLE + ", " +
@@ -35,7 +46,7 @@ public class BookDAO {
                 COL_REVIEW + ", " +
                 COL_STATUS +
                 ") VALUES (?, ?, ?, ?, ?, ?, ?)";
-        try (SQLiteDatabase db = dbhandler.getWritableDatabase()) {
+        try {
             db.execSQL(sql, new Object[]{
                     userId, title, author, category, startDate, review, status
             });
@@ -43,16 +54,15 @@ public class BookDAO {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
-        } finally {
-            dbhandler.close();
         }
     }
 
 
     public ArrayList<Book> getAllBooks(int userId) {
+        SQLiteDatabase db = dbHandler.getReadableDatabase();
         ArrayList<Book> books = new ArrayList<>();
         String sql = "SELECT * FROM " + TABLE_BOOK + " WHERE " + COL_USER_ID + " = " + userId;
-        try (SQLiteDatabase db = dbhandler.getReadableDatabase()) {
+        try  {
             Cursor cursor = db.rawQuery(sql, null);
             while (cursor.moveToNext()) {
                 Book book = new Book();
@@ -66,20 +76,18 @@ public class BookDAO {
                 book.setStatus(cursor.getString(7));
                 books.add(book);
             }
-            cursor.close();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
-        } finally {
-            dbhandler.close();
         }
         return books;
     }
 
 
     public boolean removeBook(int id) {
+        SQLiteDatabase db = dbHandler.getWritableDatabase();
         String sql = "DELETE FROM " + TABLE_BOOK + " WHERE " + COL_ID + " = " + id;
-        try (SQLiteDatabase db = dbhandler.getWritableDatabase()) {
+        try  {
             db.execSQL(sql);
             return true;
         }
@@ -87,17 +95,15 @@ public class BookDAO {
             e.printStackTrace();
             return false;
         }
-        finally {
-            dbhandler.close();
 
-        }
     }
 
     public Book getBook(int id) {
+        SQLiteDatabase db = dbHandler.getReadableDatabase();
         String sql = "SELECT * FROM " + TABLE_BOOK + " WHERE " + COL_ID + " = " + id;
         Book book = null;
 
-        try (SQLiteDatabase db = dbhandler.getReadableDatabase()) {
+        try {
             Cursor cursor = db.rawQuery(sql, null);
 
             if (cursor.moveToFirst()) {
@@ -111,29 +117,25 @@ public class BookDAO {
                 book.setReview(cursor.getString(6));
                 book.setStatus(cursor.getString(7));
             }
-            cursor.close();
         } catch (Exception e) {
             e.printStackTrace();
             return book;
-        } finally {
-            dbhandler.close();
         }
         return book;
     }
 
     public boolean updateBook(int id, int userId, String review, String status) {
+        SQLiteDatabase db = dbHandler.getWritableDatabase();
         String sqlUpdate = "UPDATE " + TABLE_BOOK + " SET " +
                 COL_REVIEW + " = ?, " +
                 COL_STATUS + " = ? " +
-                "WHERE " + COL_ID + " = ?";
-        try (SQLiteDatabase db = dbhandler.getWritableDatabase()) {
-            db.execSQL(sqlUpdate, new Object[]{review, status, id});
+                "WHERE " + COL_ID + " = ?" + " AND " + COL_USER_ID + " = ?";
+        try  {
+            db.execSQL(sqlUpdate, new Object[]{review, status, id, userId});
             return true;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
-        } finally {
-            dbhandler.close();
         }
     }
 

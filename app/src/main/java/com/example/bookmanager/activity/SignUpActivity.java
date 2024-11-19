@@ -13,17 +13,26 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 
 import com.example.bookmanager.R;
 import com.example.bookmanager.db.dao.UserDAO;
 import com.example.bookmanager.db.handler.DBHandler;
+import com.example.bookmanager.db.handler.DBHandlerSingleton;
+import com.example.bookmanager.fragment.SignInFragment;
+import com.example.bookmanager.fragment.SignUpFragment;
 import com.example.bookmanager.textchange.TextChangeHandler;
 import com.google.android.material.tabs.TabLayout;
 
-import java.util.ArrayList;
+import java.io.Serializable;
 
 public class SignUpActivity extends AppCompatActivity {
-    private DBHandler dbhandler;
+    private Fragment signInFragment;
+    private Fragment signUpFragment;
+    private View signInView;
+    private View signUpView;
+    private DBHandler dbHandler;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,8 +44,40 @@ public class SignUpActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        dbhandler = new DBHandler(this);
-        dbhandler.getWritableDatabase();
+
+        // Create db
+        dbHandler = DBHandlerSingleton.getInstance(this);
+        dbHandler.getWritableDatabase();
+        UserDAO userDAO = UserDAO.getInstance(dbHandler);
+
+        this.signInFragment = new SignInFragment();
+        this.signUpFragment = new SignUpFragment();
+
+
+        getSupportFragmentManager().beginTransaction()
+                .add(R.id.frameLayout, signInFragment, "signInFragment")
+                .add(R.id.frameLayout, signUpFragment, "signUpFragment")
+                .hide(signUpFragment)
+                .commit();
+
+        getSupportFragmentManager().executePendingTransactions();
+
+        // Add text change listener to password fields
+        signInFragment.getViewLifecycleOwnerLiveData().observe(this, lifecycleOwner -> {
+            signInView = signInFragment.getView();
+            TextChangeHandler tch = new TextChangeHandler(this);
+            EditText editPassword = signInView.findViewById(R.id.password_toggle);
+            editPassword.addTextChangedListener(tch);
+
+
+        });
+
+        signUpFragment.getViewLifecycleOwnerLiveData().observe(this, lifecycleOwner -> {
+            TextChangeHandler tch = new TextChangeHandler(this);
+            signUpView = signUpFragment.getView();
+            EditText editPassword = signUpView.findViewById(R.id.password_toggle);
+            editPassword.addTextChangedListener(tch);
+        });
 
         //Set up tabs
         TabLayout filterTabs = findViewById(R.id.sign_in_tab);
@@ -64,18 +105,12 @@ public class SignUpActivity extends AppCompatActivity {
             }
         });
 
-        //add text change listener to password field
-        TextChangeHandler tch = new TextChangeHandler(this);
-        EditText editPassword = findViewById(R.id.password_toggle);
-        editPassword.addTextChangedListener(tch);
-        EditText editName = findViewById(R.id.name_edit);
-        EditText editDOB = findViewById(R.id.name_dob);
 
         Button submitButton = findViewById(R.id.submit);
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (editName.getVisibility() == View.INVISIBLE && editDOB.getVisibility() == View.INVISIBLE){
+                if (signInFragment.isVisible()){
                     signIn();
                 }
                 else {
@@ -88,7 +123,8 @@ public class SignUpActivity extends AppCompatActivity {
 
     //check if password is strong enough
     public void validateWeakOrStrongPassword() {
-        EditText editPassword = findViewById(R.id.password_toggle);
+        View currentView = this.signInFragment.isVisible() ? this.signInView : this.signUpView;
+        EditText editPassword = currentView.findViewById(R.id.password_toggle);
         if (editPassword.length() >= 6 && editPassword.length() < 8) {
             TextView passwordValidation = findViewById(R.id.password_validation);
             passwordValidation.setText(R.string.weak_password);
@@ -105,13 +141,15 @@ public class SignUpActivity extends AppCompatActivity {
 
     //check if password is valid
     private boolean validatePassword() {
-        EditText editPassword = findViewById(R.id.password_toggle);
+        View currentView = this.signInFragment.isVisible() ? this.signInView : this.signUpView;
+        EditText editPassword = currentView.findViewById(R.id.password_toggle);
             return editPassword.length() >= 6 && !editPassword.getText().toString().contains(" ") && editPassword.getText().toString().matches(".*\\d.*");
     }
 
     //check if email is valid
     private boolean validateEmail() {
-        EditText editEmail = findViewById(R.id.edit_email);
+        View currentView = this.signInFragment.isVisible() ? this.signInView : this.signUpView;
+        EditText editEmail = currentView.findViewById(R.id.edit_email);
         // Get the string and remove any extra spaces
         String email = editEmail.getText().toString().trim();
         //Validation
@@ -119,16 +157,18 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     public boolean validateFullName() {
-        EditText editName = findViewById(R.id.name_edit);
+        View currentView = this.signInFragment.isVisible() ? this.signInView : this.signUpView;
+        EditText editName = currentView.findViewById(R.id.name_edit);
         String fullName = editName.getText().toString();
-       return fullName.isEmpty() || fullName.matches("^[a-zA-Z\\s]+$");
+       return !fullName.isEmpty() || fullName.matches("^[a-zA-Z\\s]+$");
     }
 
     public boolean validateDateOfBirth() {
-        EditText editDOB = findViewById(R.id.name_dob);
+        View currentView = this.signInFragment.isVisible() ? this.signInView : this.signUpView;
+        EditText editDOB = currentView.findViewById(R.id.name_dob);
         String userDOB = editDOB.getText().toString();
 
-        return userDOB.isEmpty() || userDOB.matches("\\d{2}/\\d{2}/\\d{4}");
+        return !userDOB.isEmpty() || userDOB.matches("\\d{2}/\\d{2}/\\d{4}");
     }
 
     //sign up user
@@ -151,8 +191,12 @@ public class SignUpActivity extends AppCompatActivity {
             Toast.makeText(SignUpActivity.this, "Invalid Date of Birth: Must be in the format DD/MM/YYYY", Toast.LENGTH_LONG).show();
             return;
         }
-        EditText editDOB = findViewById(R.id.name_dob);
+        EditText editDOB = signUpView.findViewById(R.id.name_dob);
         String userDOB = editDOB.getText().toString();
+        if (userDOB.length() != 10) {
+            Toast.makeText(SignUpActivity.this, "Invalid Date of Birth: Must be in the format DD/MM/YYYY", Toast.LENGTH_LONG).show();
+            return;
+        }
 
         if (Integer.parseInt(userDOB.substring(0,2)) > 31)
              {
@@ -172,15 +216,15 @@ public class SignUpActivity extends AppCompatActivity {
             return;
         }
 
-        EditText editEmail = findViewById(R.id.edit_email);
+        EditText editEmail = signUpView.findViewById(R.id.edit_email);
         String userEmail = editEmail.getText().toString();
-        EditText editPassword = findViewById(R.id.password_toggle);
-        EditText editName = findViewById(R.id.name_edit);
+        EditText editPassword = signUpView.findViewById(R.id.password_toggle);
+        EditText editName = signUpView.findViewById(R.id.name_edit);
         editDOB = findViewById(R.id.name_dob);
         String fullName = editName.getText().toString();
         userDOB = editDOB.getText().toString();
         String userPassword = editPassword.getText().toString();
-        UserDAO userDAO = new UserDAO(dbhandler);
+        UserDAO userDAO = UserDAO.getInstance(this.dbHandler);
         //check if user already exists
         boolean userExists = userDAO.checkIfUserExists(userEmail);
         if (userExists) {
@@ -203,6 +247,8 @@ public class SignUpActivity extends AppCompatActivity {
         Intent intent = new Intent(SignUpActivity.this, HomePageActivity.class );
         intent.putExtra("userEmail", userEmail);
         startActivity(intent);
+        this.finish();
+
     }
 
     //sign in user
@@ -217,11 +263,11 @@ public class SignUpActivity extends AppCompatActivity {
             return;
         }
 
-        EditText editEmail = findViewById(R.id.edit_email);
+        EditText editEmail = signInView.findViewById(R.id.edit_email);
         String userEmail = editEmail.getText().toString();
-        EditText editPassword = findViewById(R.id.password_toggle);
+        EditText editPassword = signInView.findViewById(R.id.password_toggle);
         String userPassword = editPassword.getText().toString();
-        UserDAO userDAO = new UserDAO(dbhandler);
+        UserDAO userDAO = UserDAO.getInstance(this.dbHandler);
         //check if user exists
         boolean userExists = userDAO.checkIfUserExists(userEmail);
         if (!userExists) {
@@ -240,36 +286,24 @@ public class SignUpActivity extends AppCompatActivity {
         Toast.makeText(SignUpActivity.this, "User Signed In", Toast.LENGTH_LONG).show();
         Intent intent = new Intent(SignUpActivity.this, HomePageActivity.class );
         intent.putExtra("userEmail", userEmail);
-        startActivity(intent);    }
+        startActivity(intent);
+        this.finish();
+    }
 
 
     private void applyFilter(int tabPosition) {
-
-        TextView nameLabel = findViewById(R.id.name_label);
-        TextView dobLabel = findViewById(R.id.DOB_label);
-
-        EditText editName = findViewById(R.id.name_edit);
-        EditText editDOB = findViewById(R.id.name_dob);
-        //Initial display text
-        TextView textView = findViewById(R.id.filter_display_text);
-
         switch (tabPosition) {
             case 0: // Sign In
-
-                editName.setText("");
-                editDOB.setText("");
-                nameLabel.setVisibility(View.INVISIBLE);
-                dobLabel.setVisibility(View.INVISIBLE);
-                editName.setVisibility(View.INVISIBLE);
-                editDOB.setVisibility(View.INVISIBLE);
+                getSupportFragmentManager().beginTransaction()
+                        .show(signInFragment)
+                        .hide(signUpFragment)
+                        .commit();
                 break;
             case 1: // Sign Up
-                editName.setText("");
-                editDOB.setText("");
-                nameLabel.setVisibility(View.VISIBLE);
-                dobLabel.setVisibility(View.VISIBLE);
-                editName.setVisibility(View.VISIBLE);
-                editDOB.setVisibility(View.VISIBLE);
+                getSupportFragmentManager().beginTransaction()
+                        .show(signUpFragment)
+                        .hide(signInFragment)
+                        .commit();
                 break;
         }
     }
